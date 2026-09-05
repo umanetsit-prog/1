@@ -463,6 +463,19 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // Watchdog: if the Supabase library fails to load (e.g. no network to the CDN),
+  // show a clear message instead of leaving the page silently non-functional.
+  window.__sbWatchdog = setTimeout(function(){
+    if(typeof window.supabase === 'undefined'){
+      var b = document.getElementById('gridLoading');
+      if(b){
+        b.innerHTML = '<span style="color:#e0556a">Не удалось загрузить библиотеку Supabase. Проверьте интернет-соединение и перезагрузите страницу.</span>';
+      }
+    }
+  }, 10000);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
 (function(){
   "use strict";
 
@@ -529,17 +542,6 @@
 
   function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 
-  function withTimeout(promise, ms){
-    return new Promise((resolve, reject)=>{
-      let done = false;
-      const timer = setTimeout(()=>{ if(!done){ done = true; reject(new Error('timeout')); } }, ms);
-      Promise.resolve(promise).then(
-        (v)=>{ if(!done){ done = true; clearTimeout(timer); resolve(v); } },
-        (e)=>{ if(!done){ done = true; clearTimeout(timer); reject(e); } }
-      );
-    });
-  }
-
   function revealApp(){
     gridLoading.hidden = true;
   }
@@ -549,87 +551,89 @@
     return d.toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
   }
 
-  /* ---------------- Storage (IndexedDB — works fully offline, in any browser) ---------------- */
-  const IDB_NAME = 'schitovaya-db';
-  const IDB_VERSION = 1;
-  const STORE = 'projects';
+  /* ---------------- Storage (Supabase — shared across devices/browsers) ---------------- */
+  // Fill these in from your Supabase project → Settings → API.
+  const SUPABASE_URL = 'https://ujimdllsqkbliimzxxqc.supabase.co/rest/v1/';
+  const SUPABASE_ANON_KEY = 'sb_publishable_vrCQEoHhh6NJZkHdZXFfLg_324Plzcl';
+  const BUCKET = 'panel-photos';
 
-  let dbPromise = null;
-  function openDB(){
-    if(dbPromise) return dbPromise;
-    dbPromise = new Promise((resolve, reject)=>{
-      if(!('indexedDB' in window)){ reject(new Error('no indexeddb')); return; }
-      const req = indexedDB.open(IDB_NAME, IDB_VERSION);
-      req.onupgradeneeded = ()=>{
-        const db = req.result;
-        if(!db.objectStoreNames.contains(STORE)){
-          db.createObjectStore(STORE, {keyPath:'id'});
-        }
-      };
-      req.onsuccess = ()=>resolve(req.result);
-      req.onerror = ()=>reject(req.error || new Error('indexeddb open failed'));
-    });
-    return dbPromise;
-  }
+  const supabaseConfigured = ()=>
+    SUPABASE_URL.indexOf('YOUR-PROJECT') === -1 && SUPABASE_ANON_KEY.indexOf('YOUR-ANON') === -1;
 
-  function idbGetAll(){
-    return openDB().then(db=>new Promise((resolve, reject)=>{
-      const tx = db.transaction(STORE, 'readonly');
-      const req = tx.objectStore(STORE).getAll();
-      req.onsuccess = ()=>resolve(req.result || []);
-      req.onerror = ()=>reject(req.error);
-    }));
+  let sb = null;
+  function getClient(){
+    if(sb) return sb;
+    if(!supabaseConfigured() || typeof window.supabase === 'undefined') return null;
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return sb;
   }
-  function idbGet(id){
-    return openDB().then(db=>new Promise((resolve, reject)=>{
-      const tx = db.transaction(STORE, 'readonly');
-      const req = tx.objectStore(STORE).get(id);
-      req.onsuccess = ()=>resolve(req.result || null);
-      req.onerror = ()=>reject(req.error);
-    }));
-  }
-  function idbPut(record){
-    return openDB().then(db=>new Promise((resolve, reject)=>{
-      const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).put(record);
-      tx.oncomplete = ()=>resolve(true);
-      tx.onerror = ()=>reject(tx.error);
-    }));
-  }
-  function idbDelete(id){
-    return openDB().then(db=>new Promise((resolve, reject)=>{
-      const tx = db.transaction(STORE, 'readwrite');
-      tx.objectStore(STORE).delete(id);
-      tx.oncomplete = ()=>resolve(true);
-      tx.onerror = ()=>reject(tx.error);
-    }));
-  }
+  const storageOk = ()=> !!getClient();
 
-  const storageOk = ()=> 'indexedDB' in window;
+  function rowToProject(row){
+    return {
+      id: row.id, name: row.name,
+      createdAt: row.created_at, updatedAt: row.updated_at,
+      image: row.image_url, thumb: row.thumb_url,
+      markers: row.markers || []
+    };
+  }
+  function projectToRow(p){
+    return {
+      id: p.id, name: p.name,
+      created_at: p.createdAt, updated_at: p.updatedAt,
+      image_url: p.image, thumb_url: p.thumb,
+      markers: p.markers || []
+    };
+  }
 
   async function loadProjectList(){
-    if(!storageOk()) return [];
+    const client = getClient();
+    if(!client) return [];
     try{
-      const all = await idbGetAll();
-      return all.map(p=>({
-        id: p.id, name: p.name, updatedAt: p.updatedAt,
-        thumb: p.thumb, markerCount: (p.markers||[]).length
+      const {data, error} = await client.from('projects')
+        .select('id,name,updated_at,thumb_url,markers')
+        .order('updated_at', {ascending:false});
+      if(error) throw error;
+      return (data||[]).map(row=>({
+        id: row.id, name: row.name, updatedAt: row.updated_at,
+        thumb: row.thumb_url, markerCount: (row.markers||[]).length
       }));
     }catch(e){ return []; }
   }
   async function loadProject(id){
-    if(!storageOk()) return null;
-    try{ return await idbGet(id); }
-    catch(e){ return null; }
+    const client = getClient();
+    if(!client) return null;
+    try{
+      const {data, error} = await client.from('projects').select('*').eq('id', id).single();
+      if(error || !data) return null;
+      return rowToProject(data);
+    }catch(e){ return null; }
   }
   async function saveCurrentProject(){
-    if(!currentProject || !storageOk()) return false;
-    try{ await idbPut(currentProject); return true; }
-    catch(e){ toast('Фото щита не сохранилось — попробуйте ещё раз'); return false; }
+    const client = getClient();
+    if(!currentProject || !client) return false;
+    try{
+      const {error} = await client.from('projects').upsert(projectToRow(currentProject));
+      if(error) throw error;
+      return true;
+    }catch(e){ toast('Не удалось сохранить в Supabase — проверьте связь'); return false; }
   }
   async function deleteProjectStorage(id){
-    if(!storageOk()) return;
-    try{ await idbDelete(id); }catch(e){}
+    const client = getClient();
+    if(!client) return;
+    try{
+      await client.from('projects').delete().eq('id', id);
+      await client.storage.from(BUCKET).remove([id+'/full.jpg', id+'/thumb.jpg']);
+    }catch(e){}
+  }
+  async function uploadImage(dataUrl, path){
+    const client = getClient();
+    if(!client) throw new Error('Supabase не настроен');
+    const blob = await (await fetch(dataUrl)).blob();
+    const {error} = await client.storage.from(BUCKET).upload(path, blob, {contentType:'image/jpeg', upsert:true});
+    if(error) throw error;
+    const {data} = client.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
   }
 
   /* ---------------- Image processing ---------------- */
@@ -753,6 +757,8 @@
     pendingImageFull = null;
     pendingImageThumb = null;
     fileInput.value = '';
+    btnCreateProject.disabled = false;
+    btnCreateProject.textContent = 'Создать';
     modalNewProject.hidden = false;
   }
   function closeNewProjectModal(){ modalNewProject.hidden = true; }
@@ -786,16 +792,29 @@
     const name = newProjectName.value.trim() || 'Без названия';
     const now = Date.now();
     const id = uid();
-    const full = {
-      id, name, createdAt: now, updatedAt: now,
-      image: pendingImageFull,
-      markers: []
-    };
-    const summary = { id, name, updatedAt: now, thumb: pendingImageThumb, markerCount: 0 };
 
     btnCreateProject.disabled = true;
-    btnCreateProject.textContent = 'Сохраняем…';
+    btnCreateProject.textContent = 'Загружаем фото…';
 
+    let fullUrl, thumbUrl;
+    try{
+      [fullUrl, thumbUrl] = await Promise.all([
+        uploadImage(pendingImageFull, id+'/full.jpg'),
+        uploadImage(pendingImageThumb, id+'/thumb.jpg')
+      ]);
+    }catch(e){
+      btnCreateProject.disabled = false;
+      btnCreateProject.textContent = 'Создать';
+      toast('Не получилось загрузить фото. Проверьте связь и попробуйте снова');
+      return;
+    }
+
+    const full = {
+      id, name, createdAt: now, updatedAt: now,
+      image: fullUrl, thumb: thumbUrl,
+      markers: []
+    };
+    btnCreateProject.textContent = 'Сохраняем…';
     currentProject = full;
     const photoSaved = await saveCurrentProject();
 
@@ -804,10 +823,11 @@
       currentProject = null;
       btnCreateProject.disabled = false;
       btnCreateProject.textContent = 'Создать';
-      toast('Не получилось сохранить фото. Проверьте связь и попробуйте снова');
+      toast('Не получилось сохранить проект. Проверьте связь и попробуйте снова');
       return;
     }
 
+    const summary = { id, name, updatedAt: now, thumb: thumbUrl, markerCount: 0 };
     projects.push(summary);
     btnCreateProject.disabled = false;
     btnCreateProject.textContent = 'Создать';
@@ -1010,6 +1030,7 @@
   btnExport.addEventListener('click', ()=>{
     if(!currentProject) return;
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.onload = ()=>{
       const canvas = document.createElement('canvas');
       canvas.width = img.width; canvas.height = img.height;
@@ -1038,16 +1059,25 @@
       link.href = canvas.toDataURL('image/png');
       link.click();
     };
+    img.onerror = ()=>toast('Не удалось загрузить фото для экспорта');
     img.src = currentProject.image;
   });
 
   /* ---------------- Init ---------------- */
   async function init(){
+    clearTimeout(window.__sbWatchdog);
+    if(typeof window.supabase !== 'undefined' && !supabaseConfigured()){
+      projects = [];
+      revealApp();
+      showList();
+      toast('Впишите SUPABASE_URL и SUPABASE_ANON_KEY в код сайта, чтобы включить сохранение');
+      return;
+    }
     if(!storageOk()){
       projects = [];
       revealApp();
       showList();
-      toast('Хранилище недоступно — проекты не будут сохраняться между визитами');
+      toast('Хранилище недоступно — проверьте подключение к Supabase');
       return;
     }
     try{
