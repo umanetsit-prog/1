@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Щитовая — маркировка электрощитов</title>
+<style>
+  :root{
+    --bg:#14171c;
+    --bg-elev:#1b2027;
+    --bg-elev-2:#232a33;
+    --border:#2b323c;
+    --border-soft:#232931;
+    --text:#e7e5e0;
+    --text-dim:#8d94a1;
+    --text-faint:#5c6270;
+    --amber:#f0a800;
+    --amber-soft:#3a2e12;
+    --copper:#c97b4a;
+    --copper-soft:#332319;
+    --teal:#4fb3a9;
+    --teal-soft:#152e2b;
+    --danger:#e0556a;
+    --danger-soft:#331b20;
+    --radius-card:10px;
+    --radius-btn:8px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%;}
+  body{
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 32px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 32px),
+      var(--bg);
+    color:var(--text);
+    font-family:ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height:100%;
+    overflow-x:hidden;
+  }
+  h1,h2,h3, .brand, .num{font-family:ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; letter-spacing:-0.01em;}
+  .mono{font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;}
+  button{font-family:inherit; cursor:pointer;}
+  input, textarea{font-family:inherit;}
+
+  /* ---------- App shell ---------- */
+  #app{max-width:1100px; margin:0 auto; min-height:100%; display:flex; flex-direction:column;}
+
+  .topbar{
+    display:flex; align-items:center; gap:12px;
+    padding:16px 18px;
+    border-bottom:1px solid var(--border-soft);
+    position:sticky; top:0; z-index:20;
+    background:rgba(20,23,28,0.92);
+    backdrop-filter:blur(8px);
+  }
+  .brand-mark{
+    width:34px; height:34px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:8px;
+    background:linear-gradient(155deg, var(--amber-soft), var(--bg-elev-2));
+    border:1px solid var(--border);
+  }
+  .brand-mark svg{width:19px; height:19px;}
+  .brand{font-size:17px; font-weight:700; letter-spacing:0.2px; margin:0;}
+  .brand-sub{font-size:11.5px; color:var(--text-faint); margin-top:1px;}
+  .topbar-spacer{flex:1;}
+  .icon-btn{
+    width:38px; height:38px; border-radius:var(--radius-btn);
+    background:var(--bg-elev); border:1px solid var(--border);
+    color:var(--text-dim);
+    display:flex; align-items:center; justify-content:center;
+    transition:border-color .15s, color .15s;
+  }
+  .icon-btn:hover{border-color:var(--text-faint); color:var(--text);}
+  .icon-btn svg{width:17px; height:17px;}
+
+  .view{flex:1; display:flex; flex-direction:column; padding:20px 18px 100px;}
+  .view[hidden]{display:none;}
+
+  /* ---------- List view ---------- */
+  .list-hero{margin:6px 2px 22px;}
+  .list-hero h1{font-size:22px; margin:0 0 6px; font-weight:600;}
+  .list-hero p{margin:0; color:var(--text-dim); font-size:14px; max-width:46ch; line-height:1.5;}
+
+  .project-grid{
+    display:grid; grid-template-columns:1fr; gap:12px;
+  }
+  @media(min-width:640px){ .project-grid{grid-template-columns:1fr 1fr;} }
+  @media(min-width:920px){ .project-grid{grid-template-columns:1fr 1fr 1fr;} }
+
+  .project-card{
+    background:var(--bg-elev);
+    border:1px solid var(--border);
+    border-radius:var(--radius-card);
+    overflow:hidden;
+    text-align:left;
+    padding:0;
+    color:inherit;
+    display:flex; flex-direction:column;
+    transition:border-color .15s, transform .1s;
+  }
+  .project-card:active{transform:scale(0.99);}
+  .project-card:hover{border-color:var(--text-faint);}
+  .project-thumb{
+    width:100%; aspect-ratio:16/10; background:var(--bg-elev-2);
+    position:relative; overflow:hidden;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .project-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .project-thumb .thumb-empty{
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-faint);
+  }
+  .thumb-empty svg{width:26px; height:26px; opacity:.6;}
+  .marker-count-chip{
+    position:absolute; right:8px; bottom:8px;
+    background:rgba(20,23,28,0.85); border:1px solid var(--border);
+    color:var(--amber); font-size:11.5px; font-weight:600;
+    padding:3px 8px; border-radius:20px;
+    display:flex; align-items:center; gap:4px;
+  }
+  .marker-count-chip svg{width:11px; height:11px;}
+  .project-info{padding:12px 14px 14px;}
+  .project-name{font-size:14.5px; font-weight:600; margin:0 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .project-meta{font-size:12px; color:var(--text-faint);}
+
+  .new-project-tile{
+    border:1.5px dashed var(--border);
+    border-radius:var(--radius-card);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; padding:32px 14px; min-height:140px;
+    color:var(--text-dim); background:transparent;
+  }
+  .new-project-tile:hover{border-color:var(--amber); color:var(--amber);}
+  .new-project-tile svg{width:22px; height:22px;}
+  .new-project-tile span{font-size:13px; font-weight:500;}
+
+  .empty-state{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:40px 20px; gap:14px; color:var(--text-dim);
+  }
+  .empty-state .glyph{
+    width:64px; height:64px; border-radius:14px;
+    background:var(--bg-elev); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .empty-state .glyph svg{width:28px; height:28px; color:var(--amber);}
+  .empty-state h2{font-size:16px; margin:0; color:var(--text); font-weight:600;}
+  .empty-state p{font-size:13.5px; max-width:32ch; line-height:1.5; margin:0;}
+  .empty-state .primary-btn{margin-top:6px;}
+
+  .fab{
+    position:fixed; right:20px; bottom:24px; z-index:25;
+    width:56px; height:56px; border-radius:50%;
+    background:var(--amber); color:#1a1300; border:none;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 20px rgba(240,168,0,0.28);
+  }
+  .fab svg{width:24px; height:24px;}
+  .fab:active{transform:scale(0.94);}
+  #app-wrap-max{max-width:1100px; margin:0 auto; width:100%;}
+
+  .primary-btn{
+    background:var(--amber); color:#1a1300; border:none;
+    font-weight:600; font-size:13.5px; padding:10px 18px;
+    border-radius:var(--radius-btn);
+  }
+  .primary-btn:active{transform:scale(0.98);}
+  .ghost-btn{
+    background:transparent; border:1px solid var(--border); color:var(--text-dim);
+    font-size:13.5px; font-weight:500; padding:9px 16px; border-radius:var(--radius-btn);
+  }
+  .ghost-btn:hover{color:var(--text); border-color:var(--text-faint);}
+  .danger-btn{
+    background:transparent; border:1px solid var(--danger); color:var(--danger);
+    font-size:13.5px; font-weight:500; padding:9px 16px; border-radius:var(--radius-btn);
+  }
+  .danger-btn:hover{background:var(--danger-soft);}
+
+  /* ---------- Editor view ---------- */
+  .editor-toolbar{
+    display:flex; align-items:center; gap:10px; margin-bottom:16px; padding:0 2px;
+  }
+  .editor-title-wrap{flex:1; min-width:0;}
+  #projectNameInput{
+    background:transparent; border:none; color:var(--text);
+    font-family:ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size:18px; font-weight:600;
+    width:100%; padding:2px 0; border-bottom:1px solid transparent;
+  }
+  #projectNameInput:focus{outline:none; border-bottom:1px solid var(--border);}
+  .editor-sub{font-size:11.5px; color:var(--text-faint); margin-top:1px;}
+
+  .editor-body{display:flex; flex-direction:column; gap:16px;}
+  @media(min-width:840px){ .editor-body{flex-direction:row; align-items:flex-start;} }
+
+  .image-stage{
+    position:relative; width:100%;
+    background:var(--bg-elev); border:1px solid var(--border); border-radius:var(--radius-card);
+    overflow:hidden; touch-action:manipulation; user-select:none; flex:1.5;
+  }
+  .image-stage img{width:100%; display:block; pointer-events:none;}
+  .stage-hint{
+    position:absolute; left:0; right:0; bottom:0;
+    background:linear-gradient(0deg, rgba(0,0,0,0.55), transparent);
+    color:#e7e5e0; font-size:12px; text-align:center; padding:22px 10px 10px;
+    pointer-events:none; opacity:0.9;
+  }
+  .stage-hint.hidden{display:none;}
+
+  .pin{
+    position:absolute; transform:translate(-50%,-50%);
+    width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace; font-size:11px; font-weight:600;
+    border:2px solid var(--bg); color:#14171c;
+    box-shadow:0 2px 6px rgba(0,0,0,0.4);
+  }
+  .pin.type-wire{background:var(--copper);}
+  .pin.type-module{background:var(--amber);}
+  .pin.type-note{background:var(--teal);}
+  .pin.draft{background:transparent; border:2px dashed var(--text); color:var(--text); animation:pulse 1.2s infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(231,229,224,0.35);}50%{box-shadow:0 0 0 6px rgba(231,229,224,0);}}
+
+  .marker-panel{
+    flex:1; min-width:0;
+    background:var(--bg-elev); border:1px solid var(--border); border-radius:var(--radius-card);
+    padding:14px;
+  }
+  .marker-panel h2{font-size:13px; margin:0 0 10px; color:var(--text-dim); font-weight:600;}
+  .marker-panel-empty{font-size:12.5px; color:var(--text-faint); line-height:1.5; padding:6px 2px;}
+
+  .marker-row{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:9px 6px; border-radius:8px; border-bottom:1px solid var(--border-soft);
+  }
+  .marker-row:last-child{border-bottom:none;}
+  .marker-row:hover{background:var(--bg-elev-2);}
+  .marker-dot{
+    width:22px; height:22px; border-radius:50%; flex-shrink:0; margin-top:1px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace; font-size:9.5px; font-weight:600; color:#14171c;
+  }
+  .marker-dot.type-wire{background:var(--copper);}
+  .marker-dot.type-module{background:var(--amber);}
+  .marker-dot.type-note{background:var(--teal);}
+  .marker-row-body{flex:1; min-width:0;}
+  .marker-row-title{font-size:13.5px; font-weight:600; margin:0;}
+  .marker-row-desc{font-size:12px; color:var(--text-dim); margin:2px 0 0; line-height:1.4; word-break:break-word;}
+  .marker-row-desc:empty{display:none;}
+
+  /* ---------- Modals ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,12,15,0.6);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:100; backdrop-filter:blur(2px);
+  }
+  @media(min-width:640px){ .modal-overlay{align-items:center;} }
+  .modal-overlay[hidden]{display:none;}
+  .modal-card{
+    background:var(--bg-elev); border:1px solid var(--border);
+    border-radius:16px 16px 0 0; width:100%; max-width:440px;
+    padding:20px 20px 24px; max-height:88vh; overflow-y:auto;
+  }
+  @media(min-width:640px){ .modal-card{border-radius:14px; margin-bottom:0;} }
+  .modal-card h3{font-size:16px; margin:0 0 16px; font-weight:600;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12px; color:var(--text-dim); margin-bottom:6px; font-weight:500;}
+  .field input[type="text"], .field textarea{
+    width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
+    border-radius:var(--radius-btn); padding:10px 12px; font-size:14px;
+  }
+  .field input[type="text"]:focus, .field textarea:focus{outline:none; border-color:var(--text-faint);}
+  .field textarea{resize:vertical; min-height:64px; line-height:1.4;}
+  .type-swatches{display:flex; gap:8px;}
+  .type-swatch{
+    flex:1; border:1.5px solid var(--border); border-radius:var(--radius-btn);
+    padding:9px 6px; display:flex; flex-direction:column; align-items:center; gap:5px;
+    background:var(--bg); color:var(--text-dim); font-size:11px; font-weight:500;
+  }
+  .type-swatch .dot{width:14px; height:14px; border-radius:50%;}
+  .type-swatch.type-wire .dot{background:var(--copper);}
+  .type-swatch.type-module .dot{background:var(--amber);}
+  .type-swatch.type-note .dot{background:var(--teal);}
+  .type-swatch.active{border-color:var(--text); color:var(--text); background:var(--bg-elev-2);}
+
+  .modal-actions{display:flex; gap:10px; margin-top:18px;}
+  .modal-actions .primary-btn, .modal-actions .ghost-btn, .modal-actions .danger-btn{flex:1;}
+
+  .upload-drop{
+    border:1.5px dashed var(--border); border-radius:var(--radius-btn);
+    padding:26px 14px; text-align:center; color:var(--text-dim); font-size:13px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .upload-drop svg{width:22px; height:22px; opacity:.7;}
+  .upload-drop input{display:none;}
+  .upload-preview{width:100%; border-radius:8px; margin-top:10px; display:block; max-height:180px; object-fit:cover;}
+
+  #gridLoading{
+    display:flex; align-items:center; gap:10px; justify-content:center;
+    padding:10px 14px; font-size:12.5px; color:var(--text-faint);
+    border-bottom:1px solid var(--border-soft);
+  }
+  #gridLoading[hidden]{display:none;}
+  #gridLoading .spinner{width:14px; height:14px; border-width:2px;}
+  .spinner{width:26px; height:26px; border-radius:50%; border:2.5px solid var(--border); border-top-color:var(--amber); animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+    background:var(--bg-elev-2); border:1px solid var(--border); color:var(--text);
+    padding:10px 16px; border-radius:8px; font-size:13px; z-index:300;
+    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+
+  .top-scoped{max-width:1100px; margin:0 auto; width:100%;}
+</style>
+</head>
+<body>
+
+<noscript>
+  <div style="position:fixed;inset:0;background:#14171c;color:#e7e5e0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:sans-serif;">
+    Этому сайту нужен JavaScript. Откройте файл в браузере телефона (не в окне предпросмотра), включив выполнение скриптов.
+  </div>
+</noscript>
+
+<div id="app">
+  <div id="gridLoading" class="grid-loading">
+    <div class="spinner"></div><span>Загрузка проектов…</span>
+  </div>
+  <header class="topbar">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f0a800" stroke-width="1.8"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+    </div>
+    <div id="titleBlock">
+      <h1 class="brand">Щитовая</h1>
+      <div class="brand-sub" id="brandSub">Маркировка электрощитов</div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <button class="icon-btn" id="btnBack" hidden title="К проектам">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="icon-btn" id="btnExport" hidden title="Экспорт со схемой">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    </button>
+    <button class="icon-btn" id="btnDeleteProject" hidden title="Удалить проект">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/></svg>
+    </button>
+  </header>
+
+  <!-- LIST VIEW -->
+  <main class="view" id="viewList">
+    <div class="top-scoped">
+      <div class="list-hero">
+        <h1>Проекты</h1>
+        <p>Фото щита — метки на проводах и модулях — всё сохраняется прямо здесь.</p>
+      </div>
+      <div class="project-grid" id="projectGrid"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <div class="glyph">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="8" cy="10" r="1.4" fill="currentColor" stroke="none"/><path d="M13 12l3-3 4 5" /></svg>
+        </div>
+        <h2>Пока нет ни одного щита</h2>
+        <p>Загрузите фото электрощита, чтобы начать расставлять метки на проводах и модулях.</p>
+        <button class="primary-btn" id="btnEmptyCreate">Загрузить фото</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- EDITOR VIEW -->
+  <main class="view" id="viewEditor" hidden>
+    <div class="top-scoped">
+      <div class="editor-toolbar">
+        <div class="editor-title-wrap">
+          <input type="text" id="projectNameInput" maxlength="60">
+          <div class="editor-sub" id="editorSub"></div>
+        </div>
+      </div>
+      <div class="editor-body">
+        <div class="image-stage" id="imageStage">
+          <img id="stageImage" alt="Фото щита">
+          <div class="stage-hint" id="stageHint">Нажмите на фото, чтобы поставить метку</div>
+        </div>
+        <aside class="marker-panel">
+          <h2>Метки <span id="markerCountLabel"></span></h2>
+          <div id="markerList"></div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <button class="fab" id="fab" title="Новый проект">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</div>
+
+<!-- NEW PROJECT MODAL -->
+<div class="modal-overlay" id="modalNewProject" hidden>
+  <div class="modal-card">
+    <h3>Новый щит</h3>
+    <div class="field">
+      <label for="newProjectName">Название</label>
+      <input type="text" id="newProjectName" placeholder="Например: Щит квартиры, 3 этаж" maxlength="60">
+    </div>
+    <div class="field">
+      <label>Фото щита</label>
+      <label class="upload-drop" id="uploadDrop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M7 9l5-5 5 5M12 4v12"/></svg>
+        <span id="uploadDropLabel">Нажмите, чтобы выбрать фото</span>
+        <input type="file" id="fileInput" accept="image/*">
+      </label>
+      <img id="uploadPreview" class="upload-preview" hidden>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost-btn" id="btnCancelNewProject">Отмена</button>
+      <button class="primary-btn" id="btnCreateProject">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- MARKER MODAL -->
+<div class="modal-overlay" id="modalMarker" hidden>
+  <div class="modal-card">
+    <h3 id="markerModalTitle">Новая метка</h3>
+    <div class="field">
+      <label>Тип</label>
+      <div class="type-swatches">
+        <button type="button" class="type-swatch type-wire" data-type="wire"><span class="dot"></span>Провод</button>
+        <button type="button" class="type-swatch type-module" data-type="module"><span class="dot"></span>Модуль</button>
+        <button type="button" class="type-swatch type-note" data-type="note"><span class="dot"></span>Заметка</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="markerLabel">Обозначение</label>
+      <input type="text" id="markerLabel" placeholder="Например: L1, N, QF3" maxlength="24">
+    </div>
+    <div class="field">
+      <label for="markerDesc">Описание</label>
+      <textarea id="markerDesc" placeholder="Например: фаза на розетки кухни, автомат 16А"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="danger-btn" id="btnDeleteMarker" hidden>Удалить</button>
+      <button class="ghost-btn" id="btnCancelMarker">Отмена</button>
+      <button class="primary-btn" id="btnSaveMarker">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="modalConfirm" hidden>
+  <div class="modal-card">
+    <h3 id="confirmTitle">Удалить проект?</h3>
+    <div class="field" style="margin-bottom:4px;">
+      <p style="font-size:13px; color:var(--text-dim); margin:0; line-height:1.5;" id="confirmText">Это действие нельзя отменить.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost-btn" id="btnConfirmCancel">Отмена</button>
+      <button class="danger-btn" id="btnConfirmOk">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  const el = (id)=>document.getElementById(id);
+  const app = el('app');
+  const gridLoading = el('gridLoading');
+  const viewList = el('viewList');
+  const viewEditor = el('viewEditor');
+  const projectGrid = el('projectGrid');
+  const emptyState = el('emptyState');
+  const fab = el('fab');
+  const btnBack = el('btnBack');
+  const btnExport = el('btnExport');
+  const btnDeleteProject = el('btnDeleteProject');
+  const brandSub = el('brandSub');
+
+  const modalNewProject = el('modalNewProject');
+  const newProjectName = el('newProjectName');
+  const uploadDrop = el('uploadDrop');
+  const uploadDropLabel = el('uploadDropLabel');
+  const fileInput = el('fileInput');
+  const uploadPreview = el('uploadPreview');
+  const btnCreateProject = el('btnCreateProject');
+  const btnCancelNewProject = el('btnCancelNewProject');
+
+  const projectNameInput = el('projectNameInput');
+  const editorSub = el('editorSub');
+  const imageStage = el('imageStage');
+  const stageImage = el('stageImage');
+  const stageHint = el('stageHint');
+  const markerList = el('markerList');
+  const markerCountLabel = el('markerCountLabel');
+
+  const modalMarker = el('modalMarker');
+  const markerModalTitle = el('markerModalTitle');
+  const markerLabel = el('markerLabel');
+  const markerDesc = el('markerDesc');
+  const btnSaveMarker = el('btnSaveMarker');
+  const btnDeleteMarker = el('btnDeleteMarker');
+  const btnCancelMarker = el('btnCancelMarker');
+  const typeSwatches = document.querySelectorAll('.type-swatch');
+
+  const modalConfirm = el('modalConfirm');
+  const confirmTitle = el('confirmTitle');
+  const confirmText = el('confirmText');
+  const btnConfirmOk = el('btnConfirmOk');
+  const btnConfirmCancel = el('btnConfirmCancel');
+
+  const toastEl = el('toast');
+
+  let projects = [];        // list summaries
+  let currentProject = null; // full project object when in editor
+  let pendingMarkerCoords = null; // {x,y} percent, for new marker
+  let editingMarkerId = null;
+  let selectedType = 'module';
+  let confirmCallback = null;
+  let draftPinEl = null;
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(()=>toastEl.classList.remove('show'), 2200);
+  }
+
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+  function withTimeout(promise, ms){
+    return new Promise((resolve, reject)=>{
+      let done = false;
+      const timer = setTimeout(()=>{ if(!done){ done = true; reject(new Error('timeout')); } }, ms);
+      Promise.resolve(promise).then(
+        (v)=>{ if(!done){ done = true; clearTimeout(timer); resolve(v); } },
+        (e)=>{ if(!done){ done = true; clearTimeout(timer); reject(e); } }
+      );
+    });
+  }
+
+  function revealApp(){
+    gridLoading.hidden = true;
+  }
+
+  function fmtDate(ts){
+    const d = new Date(ts);
+    return d.toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
+  }
+
+  /* ---------------- Storage (IndexedDB — works fully offline, in any browser) ---------------- */
+  const IDB_NAME = 'schitovaya-db';
+  const IDB_VERSION = 1;
+  const STORE = 'projects';
+
+  let dbPromise = null;
+  function openDB(){
+    if(dbPromise) return dbPromise;
+    dbPromise = new Promise((resolve, reject)=>{
+      if(!('indexedDB' in window)){ reject(new Error('no indexeddb')); return; }
+      const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+      req.onupgradeneeded = ()=>{
+        const db = req.result;
+        if(!db.objectStoreNames.contains(STORE)){
+          db.createObjectStore(STORE, {keyPath:'id'});
+        }
+      };
+      req.onsuccess = ()=>resolve(req.result);
+      req.onerror = ()=>reject(req.error || new Error('indexeddb open failed'));
+    });
+    return dbPromise;
+  }
+
+  function idbGetAll(){
+    return openDB().then(db=>new Promise((resolve, reject)=>{
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).getAll();
+      req.onsuccess = ()=>resolve(req.result || []);
+      req.onerror = ()=>reject(req.error);
+    }));
+  }
+  function idbGet(id){
+    return openDB().then(db=>new Promise((resolve, reject)=>{
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).get(id);
+      req.onsuccess = ()=>resolve(req.result || null);
+      req.onerror = ()=>reject(req.error);
+    }));
+  }
+  function idbPut(record){
+    return openDB().then(db=>new Promise((resolve, reject)=>{
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put(record);
+      tx.oncomplete = ()=>resolve(true);
+      tx.onerror = ()=>reject(tx.error);
+    }));
+  }
+  function idbDelete(id){
+    return openDB().then(db=>new Promise((resolve, reject)=>{
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).delete(id);
+      tx.oncomplete = ()=>resolve(true);
+      tx.onerror = ()=>reject(tx.error);
+    }));
+  }
+
+  const storageOk = ()=> 'indexedDB' in window;
+
+  async function loadProjectList(){
+    if(!storageOk()) return [];
+    try{
+      const all = await idbGetAll();
+      return all.map(p=>({
+        id: p.id, name: p.name, updatedAt: p.updatedAt,
+        thumb: p.thumb, markerCount: (p.markers||[]).length
+      }));
+    }catch(e){ return []; }
+  }
+  async function loadProject(id){
+    if(!storageOk()) return null;
+    try{ return await idbGet(id); }
+    catch(e){ return null; }
+  }
+  async function saveCurrentProject(){
+    if(!currentProject || !storageOk()) return false;
+    try{ await idbPut(currentProject); return true; }
+    catch(e){ toast('Фото щита не сохранилось — попробуйте ещё раз'); return false; }
+  }
+  async function deleteProjectStorage(id){
+    if(!storageOk()) return;
+    try{ await idbDelete(id); }catch(e){}
+  }
+
+  /* ---------------- Image processing ---------------- */
+  function resizeImage(file, maxDim, quality){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onerror = ()=>reject(new Error('read failed'));
+      reader.onload = ()=>{
+        const img = new Image();
+        img.onerror = ()=>reject(new Error('image decode failed'));
+        img.onload = ()=>{
+          let w = img.width, h = img.height;
+          if(w > h && w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+          else if(h >= w && h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ---------------- View switching ---------------- */
+  function showList(){
+    viewEditor.hidden = true;
+    viewList.hidden = false;
+    btnBack.hidden = true;
+    btnExport.hidden = true;
+    btnDeleteProject.hidden = true;
+    fab.hidden = false;
+    brandSub.textContent = 'Маркировка электрощитов';
+    currentProject = null;
+    renderProjectGrid();
+  }
+
+  function showEditor(project){
+    currentProject = project;
+    viewList.hidden = true;
+    viewEditor.hidden = false;
+    btnBack.hidden = false;
+    btnExport.hidden = false;
+    btnDeleteProject.hidden = false;
+    fab.hidden = true;
+    brandSub.textContent = 'Редактирование щита';
+    projectNameInput.value = project.name;
+    stageImage.src = project.image;
+    editorSub.textContent = fmtDate(project.updatedAt) + ' · ' + project.markers.length + ' ' + markerWord(project.markers.length);
+    stageHint.classList.toggle('hidden', project.markers.length > 0);
+    renderPins();
+    renderMarkerList();
+  }
+
+  function markerWord(n){
+    const m = Math.abs(n)%100;
+    const m1 = m%10;
+    if(m>10 && m<20) return 'меток';
+    if(m1===1) return 'метка';
+    if(m1>=2 && m1<=4) return 'метки';
+    return 'меток';
+  }
+
+  /* ---------------- Project list rendering ---------------- */
+  function renderProjectGrid(){
+    projectGrid.innerHTML = '';
+    if(projects.length === 0){
+      emptyState.hidden = false;
+      return;
+    }
+    emptyState.hidden = true;
+
+    const sorted = [...projects].sort((a,b)=>b.updatedAt - a.updatedAt);
+
+    const newTile = document.createElement('button');
+    newTile.className = 'new-project-tile';
+    newTile.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg><span>Новый щит</span>`;
+    newTile.addEventListener('click', openNewProjectModal);
+    projectGrid.appendChild(newTile);
+
+    sorted.forEach(p=>{
+      const card = document.createElement('button');
+      card.className = 'project-card';
+      card.innerHTML = `
+        <div class="project-thumb">
+          ${p.thumb ? `<img src="${p.thumb}" alt="">` : `<div class="thumb-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/></svg></div>`}
+          <div class="marker-count-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"/></svg>
+            ${p.markerCount}
+          </div>
+        </div>
+        <div class="project-info">
+          <p class="project-name">${escapeHtml(p.name)}</p>
+          <p class="project-meta mono">${fmtDate(p.updatedAt)}</p>
+        </div>`;
+      card.addEventListener('click', async ()=>{
+        const full = await loadProject(p.id);
+        if(full){ showEditor(full); }
+        else{ toast('Не удалось открыть проект'); }
+      });
+      projectGrid.appendChild(card);
+    });
+  }
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  /* ---------------- New project modal ---------------- */
+  let pendingImageFull = null;
+  let pendingImageThumb = null;
+
+  function openNewProjectModal(){
+    newProjectName.value = '';
+    uploadPreview.hidden = true;
+    uploadDropLabel.textContent = 'Нажмите, чтобы выбрать фото';
+    pendingImageFull = null;
+    pendingImageThumb = null;
+    fileInput.value = '';
+    modalNewProject.hidden = false;
+  }
+  function closeNewProjectModal(){ modalNewProject.hidden = true; }
+
+  fileInput.addEventListener('change', async ()=>{
+    const file = fileInput.files[0];
+    if(!file) return;
+    uploadDropLabel.textContent = 'Обработка фото…';
+    try{
+      const [full, thumb] = await Promise.all([
+        resizeImage(file, 1100, 0.68),
+        resizeImage(file, 220, 0.6)
+      ]);
+      pendingImageFull = full;
+      pendingImageThumb = thumb;
+      uploadPreview.src = full;
+      uploadPreview.hidden = false;
+      uploadDropLabel.textContent = 'Фото выбрано — можно заменить';
+      if(!newProjectName.value){
+        newProjectName.value = file.name.replace(/\.[a-zA-Z0-9]+$/, '').slice(0,60);
+      }
+    }catch(e){
+      uploadDropLabel.textContent = 'Не удалось обработать фото, попробуйте другое';
+    }
+  });
+
+  btnCancelNewProject.addEventListener('click', closeNewProjectModal);
+
+  btnCreateProject.addEventListener('click', async ()=>{
+    if(!pendingImageFull){ toast('Сначала выберите фото щита'); return; }
+    const name = newProjectName.value.trim() || 'Без названия';
+    const now = Date.now();
+    const id = uid();
+    const full = {
+      id, name, createdAt: now, updatedAt: now,
+      image: pendingImageFull,
+      markers: []
+    };
+    const summary = { id, name, updatedAt: now, thumb: pendingImageThumb, markerCount: 0 };
+
+    btnCreateProject.disabled = true;
+    btnCreateProject.textContent = 'Сохраняем…';
+
+    currentProject = full;
+    const photoSaved = await saveCurrentProject();
+
+    if(!photoSaved){
+      // Don't leave a dead card in the list pointing at nothing that was ever saved.
+      currentProject = null;
+      btnCreateProject.disabled = false;
+      btnCreateProject.textContent = 'Создать';
+      toast('Не получилось сохранить фото. Проверьте связь и попробуйте снова');
+      return;
+    }
+
+    projects.push(summary);
+    btnCreateProject.disabled = false;
+    btnCreateProject.textContent = 'Создать';
+    closeNewProjectModal();
+    showEditor(full);
+    toast('Проект создан');
+  });
+
+  el('btnEmptyCreate').addEventListener('click', openNewProjectModal);
+  fab.addEventListener('click', openNewProjectModal);
+
+  /* ---------------- Editor: name editing ---------------- */
+  let nameDebounce = null;
+  projectNameInput.addEventListener('input', ()=>{
+    if(!currentProject) return;
+    currentProject.name = projectNameInput.value.trim() || 'Без названия';
+    clearTimeout(nameDebounce);
+    nameDebounce = setTimeout(async ()=>{
+      currentProject.updatedAt = Date.now();
+      await persistCurrentAndSummary();
+    }, 500);
+  });
+
+  async function persistCurrentAndSummary(){
+    if(!currentProject) return;
+    await saveCurrentProject();
+    const idx = projects.findIndex(p=>p.id === currentProject.id);
+    if(idx > -1){
+      projects[idx].name = currentProject.name;
+      projects[idx].updatedAt = currentProject.updatedAt;
+      projects[idx].markerCount = currentProject.markers.length;
+    }
+    editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + currentProject.markers.length + ' ' + markerWord(currentProject.markers.length);
+  }
+
+  /* ---------------- Pins & markers ---------------- */
+  function renderPins(){
+    const existing = imageStage.querySelectorAll('.pin:not(.draft)');
+    existing.forEach(p=>p.remove());
+    currentProject.markers.forEach((m, i)=>{
+      const pin = document.createElement('div');
+      pin.className = 'pin type-' + m.type;
+      pin.style.left = m.x + '%';
+      pin.style.top = m.y + '%';
+      pin.textContent = m.label && m.label.length <= 4 ? m.label : (i+1);
+      pin.title = m.label;
+      pin.addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+        openMarkerModal(m.id);
+      });
+      imageStage.appendChild(pin);
+    });
+  }
+
+  function renderMarkerList(){
+    markerCountLabel.textContent = currentProject.markers.length ? `(${currentProject.markers.length})` : '';
+    if(currentProject.markers.length === 0){
+      markerList.innerHTML = '<p class="marker-panel-empty">Меток пока нет. Нажмите на фото щита, чтобы отметить провод, модуль или автомат.</p>';
+      return;
+    }
+    markerList.innerHTML = '';
+    currentProject.markers.forEach((m, i)=>{
+      const row = document.createElement('div');
+      row.className = 'marker-row';
+      row.style.cursor = 'pointer';
+      row.innerHTML = `
+        <div class="marker-dot type-${m.type}">${m.label && m.label.length<=4 ? escapeHtml(m.label) : (i+1)}</div>
+        <div class="marker-row-body">
+          <p class="marker-row-title">${escapeHtml(m.label || ('Метка '+(i+1)))}</p>
+          <p class="marker-row-desc">${escapeHtml(m.desc || '')}</p>
+        </div>`;
+      row.addEventListener('click', ()=>openMarkerModal(m.id));
+      markerList.appendChild(row);
+    });
+  }
+
+  imageStage.addEventListener('click', (ev)=>{
+    if(!currentProject) return;
+    const rect = stageImage.getBoundingClientRect();
+    if(rect.width === 0) return;
+    const x = ((ev.clientX - rect.left) / rect.width) * 100;
+    const y = ((ev.clientY - rect.top) / rect.height) * 100;
+    if(x < 0 || x > 100 || y < 0 || y > 100) return;
+    pendingMarkerCoords = {x: Math.max(1,Math.min(99,x)), y: Math.max(1,Math.min(99,y))};
+    placeDraftPin(pendingMarkerCoords);
+    openMarkerModal(null);
+  });
+
+  function placeDraftPin(coords){
+    removeDraftPin();
+    draftPinEl = document.createElement('div');
+    draftPinEl.className = 'pin draft';
+    draftPinEl.style.left = coords.x + '%';
+    draftPinEl.style.top = coords.y + '%';
+    draftPinEl.textContent = '+';
+    imageStage.appendChild(draftPinEl);
+  }
+  function removeDraftPin(){
+    if(draftPinEl){ draftPinEl.remove(); draftPinEl = null; }
+  }
+
+  function setSelectedType(type){
+    selectedType = type;
+    typeSwatches.forEach(sw=>sw.classList.toggle('active', sw.dataset.type === type));
+  }
+  typeSwatches.forEach(sw=>sw.addEventListener('click', ()=>setSelectedType(sw.dataset.type)));
+
+  function openMarkerModal(markerId){
+    editingMarkerId = markerId;
+    if(markerId){
+      const m = currentProject.markers.find(mm=>mm.id === markerId);
+      markerModalTitle.textContent = 'Метка';
+      markerLabel.value = m.label || '';
+      markerDesc.value = m.desc || '';
+      setSelectedType(m.type || 'module');
+      btnDeleteMarker.hidden = false;
+    }else{
+      markerModalTitle.textContent = 'Новая метка';
+      markerLabel.value = '';
+      markerDesc.value = '';
+      setSelectedType('module');
+      btnDeleteMarker.hidden = true;
+    }
+    modalMarker.hidden = false;
+    setTimeout(()=>markerLabel.focus(), 50);
+  }
+
+  function closeMarkerModal(){
+    modalMarker.hidden = true;
+    removeDraftPin();
+    editingMarkerId = null;
+    pendingMarkerCoords = null;
+  }
+  btnCancelMarker.addEventListener('click', closeMarkerModal);
+
+  btnSaveMarker.addEventListener('click', async ()=>{
+    const label = markerLabel.value.trim();
+    const desc = markerDesc.value.trim();
+    if(!label && !desc){ toast('Добавьте обозначение или описание'); return; }
+    if(editingMarkerId){
+      const m = currentProject.markers.find(mm=>mm.id === editingMarkerId);
+      m.label = label; m.desc = desc; m.type = selectedType;
+    }else{
+      currentProject.markers.push({
+        id: uid(), x: pendingMarkerCoords.x, y: pendingMarkerCoords.y,
+        label, desc, type: selectedType
+      });
+    }
+    currentProject.updatedAt = Date.now();
+    removeDraftPin();
+    modalMarker.hidden = true;
+    stageHint.classList.add('hidden');
+    renderPins();
+    renderMarkerList();
+    await persistCurrentAndSummary();
+    editingMarkerId = null;
+    pendingMarkerCoords = null;
+  });
+
+  btnDeleteMarker.addEventListener('click', ()=>{
+    askConfirm('Удалить метку?', 'Описание и позиция метки будут удалены безвозвратно.', async ()=>{
+      currentProject.markers = currentProject.markers.filter(mm=>mm.id !== editingMarkerId);
+      currentProject.updatedAt = Date.now();
+      closeMarkerModal();
+      renderPins();
+      renderMarkerList();
+      await persistCurrentAndSummary();
+    });
+  });
+
+  /* ---------------- Delete project ---------------- */
+  btnDeleteProject.addEventListener('click', ()=>{
+    askConfirm('Удалить проект?', `Фото и все метки проекта «${currentProject.name}» будут удалены безвозвратно.`, async ()=>{
+      const id = currentProject.id;
+      projects = projects.filter(p=>p.id !== id);
+      await deleteProjectStorage(id);
+      showList();
+      toast('Проект удалён');
+    });
+  });
+
+  /* ---------------- Confirm modal ---------------- */
+  function askConfirm(title, text, cb){
+    confirmTitle.textContent = title;
+    confirmText.textContent = text;
+    confirmCallback = cb;
+    modalConfirm.hidden = false;
+  }
+  btnConfirmCancel.addEventListener('click', ()=>{ modalConfirm.hidden = true; confirmCallback = null; });
+  btnConfirmOk.addEventListener('click', async ()=>{
+    modalConfirm.hidden = true;
+    if(confirmCallback) await confirmCallback();
+    confirmCallback = null;
+  });
+
+  /* ---------------- Back ---------------- */
+  btnBack.addEventListener('click', showList);
+
+  /* ---------------- Export ---------------- */
+  btnExport.addEventListener('click', ()=>{
+    if(!currentProject) return;
+    const img = new Image();
+    img.onload = ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const r = Math.max(14, Math.round(img.width * 0.014));
+      currentProject.markers.forEach((m, i)=>{
+        const cx = img.width * m.x/100, cy = img.height * m.y/100;
+        const color = m.type === 'wire' ? '#c97b4a' : m.type === 'note' ? '#4fb3a9' : '#f0a800';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI*2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.lineWidth = Math.max(2, r*0.15);
+        ctx.strokeStyle = '#14171c';
+        ctx.stroke();
+        ctx.fillStyle = '#14171c';
+        ctx.font = `600 ${Math.round(r*0.9)}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const txt = m.label && m.label.length <= 4 ? m.label : String(i+1);
+        ctx.fillText(txt, cx, cy+1);
+      });
+      const link = document.createElement('a');
+      link.download = (currentProject.name || 'schitovaya').replace(/[^\wа-яА-ЯёЁ\- ]/g,'').trim() + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+    img.src = currentProject.image;
+  });
+
+  /* ---------------- Init ---------------- */
+  async function init(){
+    if(!storageOk()){
+      projects = [];
+      revealApp();
+      showList();
+      toast('Хранилище недоступно — проекты не будут сохраняться между визитами');
+      return;
+    }
+    try{
+      const loaded = await loadProjectList();
+      const loadedIds = new Set(loaded.map(p=>p.id));
+      const localOnly = projects.filter(p=>!loadedIds.has(p.id));
+      projects = [...loaded, ...localOnly];
+    }catch(e){
+      // keep whatever is already in memory (e.g. a project created before load finished)
+    }
+    revealApp();
+    showList();
+  }
+  // Hard safety net: never let the loading indicator stay stuck.
+  setTimeout(()=>{
+    if(!gridLoading.hidden){
+      revealApp();
+      showList();
+      toast('Не удалось связаться с хранилищем — работаем в режиме без сохранения');
+    }
+  }, 8000);
+  // Show the shell immediately; render an empty list right away so the UI
+  // is never blank, then swap in real data once/if it arrives.
+  showList();
+  init();
+
+})();
+</script>
+</body>
+</html>
