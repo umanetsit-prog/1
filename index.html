@@ -180,7 +180,43 @@
   /* ---------- Editor view ---------- */
   .editor-toolbar{
     display:flex; align-items:center; gap:10px; margin-bottom:16px; padding:0 2px;
+    flex-wrap:wrap;
   }
+  .mode-toggle{
+    display:flex; gap:2px; background:var(--bg-elev); border:1px solid var(--border);
+    border-radius:20px; padding:3px; flex-shrink:0;
+  }
+  .mode-btn{
+    display:flex; align-items:center; gap:5px;
+    background:transparent; border:none; color:var(--text-dim);
+    font-size:12px; font-weight:500; padding:7px 12px; border-radius:16px;
+  }
+  .mode-btn svg{width:13px; height:13px;}
+  .mode-btn.active{background:var(--bg-elev-2); color:var(--text);}
+  .mode-btn.active[data-mode="view"]{color:var(--teal);}
+  .mode-btn.active[data-mode="edit"]{color:var(--amber);}
+
+  .marker-info-popup{
+    position:absolute; z-index:15; left:50%; bottom:14px; transform:translateX(-50%);
+    max-width:88%; width:280px;
+    background:var(--bg-elev-2); border:1px solid var(--border); border-radius:12px;
+    padding:12px 34px 12px 12px; display:flex; gap:10px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.45);
+  }
+  .marker-info-popup[hidden]{display:none;}
+  .popup-close{
+    position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%;
+    background:transparent; border:none; color:var(--text-faint); font-size:18px; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .popup-close:hover{color:var(--text);}
+  .popup-dot{width:20px; height:20px; border-radius:50%; flex-shrink:0; margin-top:2px;}
+  .popup-dot.type-wire{background:var(--copper);}
+  .popup-dot.type-module{background:var(--amber);}
+  .popup-dot.type-note{background:var(--teal);}
+  .popup-title{font-size:13.5px; font-weight:600; margin:0 0 3px;}
+  .popup-desc{font-size:12.5px; color:var(--text-dim); margin:0; line-height:1.45; word-break:break-word;}
+  .popup-desc:empty::after{content:'Без описания'; color:var(--text-faint); font-style:italic;}
   .editor-title-wrap{flex:1; min-width:0;}
   #projectNameInput{
     background:transparent; border:none; color:var(--text);
@@ -209,11 +245,12 @@
 
   .pin{
     position:absolute; transform:translate(-50%,-50%);
-    width:26px; height:26px; border-radius:50%;
+    width:13px; height:13px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
-    font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace; font-size:11px; font-weight:600;
-    border:2px solid var(--bg); color:#14171c;
+    font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace; font-size:5.5px; font-weight:600;
+    border:1px solid var(--bg); color:#14171c;
     box-shadow:0 2px 6px rgba(0,0,0,0.4);
+    cursor:pointer;
   }
   .pin.type-wire{background:var(--copper);}
   .pin.type-module{background:var(--amber);}
@@ -375,11 +412,29 @@
           <input type="text" id="projectNameInput" maxlength="60">
           <div class="editor-sub" id="editorSub"></div>
         </div>
+        <div class="mode-toggle" id="modeToggle">
+          <button type="button" class="mode-btn active" data-mode="edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Редактор
+          </button>
+          <button type="button" class="mode-btn" data-mode="view">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/></svg>
+            Просмотр
+          </button>
+        </div>
       </div>
       <div class="editor-body">
         <div class="image-stage" id="imageStage">
           <img id="stageImage" alt="Фото щита">
           <div class="stage-hint" id="stageHint">Нажмите на фото, чтобы поставить метку</div>
+          <div class="marker-info-popup" id="markerInfoPopup" hidden>
+            <button class="popup-close" id="popupClose" type="button">&times;</button>
+            <div class="popup-dot" id="popupDot"></div>
+            <div class="popup-body">
+              <p class="popup-title" id="popupTitle"></p>
+              <p class="popup-desc" id="popupDesc"></p>
+            </div>
+          </div>
         </div>
         <aside class="marker-panel">
           <h2>Метки <span id="markerCountLabel"></span></h2>
@@ -508,6 +563,14 @@
   const stageHint = el('stageHint');
   const markerList = el('markerList');
   const markerCountLabel = el('markerCountLabel');
+  const modeToggle = el('modeToggle');
+  const modeBtns = document.querySelectorAll('.mode-btn');
+  const markerInfoPopup = el('markerInfoPopup');
+  const popupClose = el('popupClose');
+  const popupDot = el('popupDot');
+  const popupTitle = el('popupTitle');
+  const popupDesc = el('popupDesc');
+  let editorMode = 'edit';
 
   const modalMarker = el('modalMarker');
   const markerModalTitle = el('markerModalTitle');
@@ -685,10 +748,39 @@
     projectNameInput.value = project.name;
     stageImage.src = project.image;
     editorSub.textContent = fmtDate(project.updatedAt) + ' · ' + project.markers.length + ' ' + markerWord(project.markers.length);
-    stageHint.classList.toggle('hidden', project.markers.length > 0);
+    setMode('edit');
     renderPins();
     renderMarkerList();
   }
+
+  function setMode(newMode){
+    editorMode = newMode;
+    modeBtns.forEach(b=>b.classList.toggle('active', b.dataset.mode === newMode));
+    hideMarkerInfoPopup();
+    updateStageHint();
+  }
+  modeBtns.forEach(b=>b.addEventListener('click', ()=>setMode(b.dataset.mode)));
+
+  function updateStageHint(){
+    if(!currentProject) return;
+    if(currentProject.markers.length > 0){
+      stageHint.classList.add('hidden');
+      return;
+    }
+    stageHint.textContent = editorMode === 'edit'
+      ? 'Нажмите на фото, чтобы поставить метку'
+      : 'В этом проекте пока нет меток';
+    stageHint.classList.remove('hidden');
+  }
+
+  function showMarkerInfoPopup(m){
+    popupDot.className = 'popup-dot type-' + m.type;
+    popupTitle.textContent = m.label || 'Без обозначения';
+    popupDesc.textContent = m.desc || '';
+    markerInfoPopup.hidden = false;
+  }
+  function hideMarkerInfoPopup(){ markerInfoPopup.hidden = true; }
+  popupClose.addEventListener('click', hideMarkerInfoPopup);
 
   function markerWord(n){
     const m = Math.abs(n)%100;
@@ -876,7 +968,8 @@
       pin.title = m.label;
       pin.addEventListener('click', (ev)=>{
         ev.stopPropagation();
-        openMarkerModal(m.id);
+        if(editorMode === 'view'){ showMarkerInfoPopup(m); }
+        else{ openMarkerModal(m.id); }
       });
       imageStage.appendChild(pin);
     });
@@ -899,13 +992,17 @@
           <p class="marker-row-title">${escapeHtml(m.label || ('Метка '+(i+1)))}</p>
           <p class="marker-row-desc">${escapeHtml(m.desc || '')}</p>
         </div>`;
-      row.addEventListener('click', ()=>openMarkerModal(m.id));
+      row.addEventListener('click', ()=>{
+        if(editorMode === 'view'){ showMarkerInfoPopup(m); }
+        else{ openMarkerModal(m.id); }
+      });
       markerList.appendChild(row);
     });
   }
 
   imageStage.addEventListener('click', (ev)=>{
     if(!currentProject) return;
+    if(editorMode === 'view'){ hideMarkerInfoPopup(); return; }
     const rect = stageImage.getBoundingClientRect();
     if(rect.width === 0) return;
     const x = ((ev.clientX - rect.left) / rect.width) * 100;
@@ -994,6 +1091,7 @@
       closeMarkerModal();
       renderPins();
       renderMarkerList();
+      updateStageHint();
       await persistCurrentAndSummary();
     });
   });
