@@ -73,8 +73,15 @@
     display:flex; align-items:center; justify-content:center;
     transition:border-color .15s, color .15s;
   }
+  .icon-btn[hidden]{display:none;}
   .icon-btn:hover{border-color:var(--text-faint); color:var(--text);}
   .icon-btn svg{width:17px; height:17px;}
+  .lang-select{
+    background:var(--bg-elev); border:1px solid var(--border); color:var(--text-dim);
+    border-radius:var(--radius-btn); padding:8px 10px; font-size:12.5px; font-weight:500;
+    height:38px; cursor:pointer;
+  }
+  .lang-select:hover{border-color:var(--text-faint); color:var(--text);}
 
   .view{flex:1; display:flex; flex-direction:column; padding:20px 18px 100px;}
   .view[hidden]{display:none;}
@@ -140,6 +147,7 @@
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
     text-align:center; padding:40px 20px; gap:14px; color:var(--text-dim);
   }
+  .empty-state[hidden]{display:none;}
   .empty-state .glyph{
     width:64px; height:64px; border-radius:14px;
     background:var(--bg-elev); border:1px solid var(--border);
@@ -228,7 +236,6 @@
   .popup-dot.type-note{background:var(--teal);}
   .popup-title{font-size:13.5px; font-weight:600; margin:0 0 3px;}
   .popup-desc{font-size:12.5px; color:var(--text-dim); margin:0; line-height:1.45; word-break:break-word;}
-  .popup-desc:empty::after{content:'Без описания'; color:var(--text-faint); font-style:italic;}
   .editor-title-wrap{flex:1; min-width:0;}
   #projectNameInput{
     background:transparent; border:none; color:var(--text);
@@ -355,6 +362,7 @@
   .upload-drop svg{width:22px; height:22px; opacity:.7;}
   .upload-drop input{display:none;}
   .upload-preview{width:100%; border-radius:8px; margin-top:10px; display:block; max-height:180px; object-fit:cover;}
+  .upload-preview[hidden]{display:none;}
 
   #gridLoading{
     display:flex; align-items:center; gap:10px; justify-content:center;
@@ -415,24 +423,25 @@
 
 <div id="app">
   <div id="gridLoading" class="grid-loading">
-    <div class="spinner"></div><span>Загрузка проектов…</span>
+    <div class="spinner"></div><span data-i18n="loading.projects">Загрузка проектов…</span>
   </div>
   <header class="topbar">
     <div class="brand-mark">
       <svg viewBox="0 0 24 24" fill="none" stroke="#f0a800" stroke-width="1.8"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
     </div>
     <div id="titleBlock">
-      <h1 class="brand">Щитовая</h1>
-      <div class="brand-sub" id="brandSub">Маркировка электрощитов</div>
+      <h1 class="brand" data-i18n="brand.name">Щитовая</h1>
+      <div class="brand-sub" id="brandSub" data-i18n="app.tagline">Маркировка электрощитов</div>
     </div>
     <div class="topbar-spacer"></div>
-    <button class="icon-btn" id="btnBack" hidden title="К проектам">
+    <select id="langSelect" class="lang-select"></select>
+    <button class="icon-btn" id="btnBack" hidden data-i18n-title="btn.back" title="К проектам">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <button class="icon-btn" id="btnExport" hidden title="Сохранить в PDF">
+    <button class="icon-btn" id="btnExport" hidden data-i18n-title="btn.exportPdf" title="Сохранить в PDF">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
     </button>
-    <button class="icon-btn" id="btnDeleteProject" hidden title="Удалить проект">
+    <button class="icon-btn" id="btnDeleteProject" hidden data-i18n-title="btn.deleteProject" title="Удалить проект">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/></svg>
     </button>
   </header>
@@ -441,17 +450,17 @@
   <main class="view" id="viewList">
     <div class="top-scoped">
       <div class="list-hero">
-        <h1>Проекты</h1>
-        <p>Фото щита — метки на проводах и модулях — всё сохраняется прямо здесь.</p>
+        <h1 data-i18n="list.title">Проекты</h1>
+        <p data-i18n="list.subtitle">Фото щита — метки на проводах и модулях — всё сохраняется прямо здесь.</p>
       </div>
       <div class="project-grid" id="projectGrid"></div>
       <div class="empty-state" id="emptyState" hidden>
         <div class="glyph">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="8" cy="10" r="1.4" fill="currentColor" stroke="none"/><path d="M13 12l3-3 4 5" /></svg>
         </div>
-        <h2>Пока нет ни одного щита</h2>
-        <p>Загрузите фото электрощита, чтобы начать расставлять метки на проводах и модулях.</p>
-        <button class="primary-btn" id="btnEmptyCreate">Загрузить фото</button>
+        <h2 data-i18n="empty.title">Пока нет ни одного щита</h2>
+        <p data-i18n="empty.desc">Загрузите фото электрощита, чтобы начать расставлять метки на проводах и модулях.</p>
+        <button class="primary-btn" id="btnEmptyCreate" data-i18n="btn.uploadPhoto">Загрузить фото</button>
       </div>
     </div>
   </main>
@@ -467,14 +476,14 @@
         <div class="mode-toggle" id="modeToggle">
           <button type="button" class="mode-btn active" data-mode="edit">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-            Редактор
+            <span data-i18n="mode.edit">Редактор</span>
           </button>
           <button type="button" class="mode-btn" data-mode="view">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/></svg>
-            Просмотр
+            <span data-i18n="mode.view">Просмотр</span>
           </button>
         </div>
-        <div class="size-control" title="Размер меток на фото">
+        <div class="size-control" data-i18n-title="size.title" title="Размер меток на фото">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/></svg>
           <input type="range" id="pinSizeRange" min="8" max="30" step="1" value="13">
           <span id="pinSizeValue" class="mono">13px</span>
@@ -494,14 +503,14 @@
           </div>
         </div>
         <aside class="marker-panel">
-          <h2>Метки <span id="markerCountLabel"></span></h2>
+          <h2><span data-i18n="markers.heading">Метки</span> <span id="markerCountLabel"></span></h2>
           <div id="markerList"></div>
         </aside>
       </div>
     </div>
   </main>
 
-  <button class="fab" id="fab" title="Новый проект">
+  <button class="fab" id="fab" data-i18n-title="fab.newProject" title="Новый проект">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
   </button>
 </div>
@@ -509,23 +518,23 @@
 <!-- NEW PROJECT MODAL -->
 <div class="modal-overlay" id="modalNewProject" hidden>
   <div class="modal-card">
-    <h3>Новый щит</h3>
+    <h3 data-i18n="modal.newProject.title">Новый щит</h3>
     <div class="field">
-      <label for="newProjectName">Название</label>
-      <input type="text" id="newProjectName" placeholder="Например: Щит квартиры, 3 этаж" maxlength="60">
+      <label for="newProjectName" data-i18n="field.name">Название</label>
+      <input type="text" id="newProjectName" data-i18n-placeholder="placeholder.projectName" placeholder="Например: Щит квартиры, 3 этаж" maxlength="60">
     </div>
     <div class="field">
-      <label>Фото щита</label>
+      <label data-i18n="field.photo">Фото щита</label>
       <label class="upload-drop" id="uploadDrop">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M7 9l5-5 5 5M12 4v12"/></svg>
-        <span id="uploadDropLabel">Нажмите, чтобы выбрать фото</span>
+        <span id="uploadDropLabel" data-i18n="upload.prompt">Нажмите, чтобы выбрать фото</span>
         <input type="file" id="fileInput" accept="image/*">
       </label>
       <img id="uploadPreview" class="upload-preview" hidden>
     </div>
     <div class="modal-actions">
-      <button class="ghost-btn" id="btnCancelNewProject">Отмена</button>
-      <button class="primary-btn" id="btnCreateProject">Создать</button>
+      <button class="ghost-btn" id="btnCancelNewProject" data-i18n="btn.cancel">Отмена</button>
+      <button class="primary-btn" id="btnCreateProject" data-i18n="btn.create">Создать</button>
     </div>
   </div>
 </div>
@@ -535,25 +544,25 @@
   <div class="modal-card">
     <h3 id="markerModalTitle">Новая метка</h3>
     <div class="field">
-      <label>Тип</label>
+      <label data-i18n="field.type">Тип</label>
       <div class="type-swatches">
-        <button type="button" class="type-swatch type-wire" data-type="wire"><span class="dot"></span>Провод</button>
-        <button type="button" class="type-swatch type-module" data-type="module"><span class="dot"></span>Модуль</button>
-        <button type="button" class="type-swatch type-note" data-type="note"><span class="dot"></span>Заметка</button>
+        <button type="button" class="type-swatch type-wire" data-type="wire"><span class="dot"></span><span data-i18n="type.wire">Провод</span></button>
+        <button type="button" class="type-swatch type-module" data-type="module"><span class="dot"></span><span data-i18n="type.module">Модуль</span></button>
+        <button type="button" class="type-swatch type-note" data-type="note"><span class="dot"></span><span data-i18n="type.note">Заметка</span></button>
       </div>
     </div>
     <div class="field">
-      <label for="markerLabel">Обозначение</label>
-      <input type="text" id="markerLabel" placeholder="Например: L1, N, QF3" maxlength="24">
+      <label for="markerLabel" data-i18n="field.label">Обозначение</label>
+      <input type="text" id="markerLabel" data-i18n-placeholder="placeholder.markerLabel" placeholder="Например: L1, N, QF3" maxlength="24">
     </div>
     <div class="field">
-      <label for="markerDesc">Описание</label>
-      <textarea id="markerDesc" placeholder="Например: фаза на розетки кухни, автомат 16А"></textarea>
+      <label for="markerDesc" data-i18n="field.desc">Описание</label>
+      <textarea id="markerDesc" data-i18n-placeholder="placeholder.markerDesc" placeholder="Например: фаза на розетки кухни, автомат 16А"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="danger-btn" id="btnDeleteMarker" hidden>Удалить</button>
-      <button class="ghost-btn" id="btnCancelMarker">Отмена</button>
-      <button class="primary-btn" id="btnSaveMarker">Сохранить</button>
+      <button class="danger-btn" id="btnDeleteMarker" hidden data-i18n="btn.delete">Удалить</button>
+      <button class="ghost-btn" id="btnCancelMarker" data-i18n="btn.cancel">Отмена</button>
+      <button class="primary-btn" id="btnSaveMarker" data-i18n="btn.save">Сохранить</button>
     </div>
   </div>
 </div>
@@ -566,8 +575,8 @@
       <p style="font-size:13px; color:var(--text-dim); margin:0; line-height:1.5;" id="confirmText">Это действие нельзя отменить.</p>
     </div>
     <div class="modal-actions">
-      <button class="ghost-btn" id="btnConfirmCancel">Отмена</button>
-      <button class="danger-btn" id="btnConfirmOk">Удалить</button>
+      <button class="ghost-btn" id="btnConfirmCancel" data-i18n="btn.cancel">Отмена</button>
+      <button class="danger-btn" id="btnConfirmOk" data-i18n="btn.delete">Удалить</button>
     </div>
   </div>
 </div>
@@ -578,7 +587,7 @@
   <h1 id="printTitle"></h1>
   <p id="printMeta"></p>
   <img id="printImage" alt="Фото щита с метками">
-  <h2>Метки</h2>
+  <h2 data-i18n="markers.heading">Метки</h2>
   <div id="printMarkerList"></div>
 </div>
 
@@ -611,6 +620,7 @@
   const btnExport = el('btnExport');
   const btnDeleteProject = el('btnDeleteProject');
   const brandSub = el('brandSub');
+  const langSelect = el('langSelect');
 
   const modalNewProject = el('modalNewProject');
   const newProjectName = el('newProjectName');
@@ -684,6 +694,244 @@
   let confirmCallback = null;
   let draftPinEl = null;
 
+  /* ---------------- i18n ---------------- */
+  const LANGS = ['ru','uk','en','de','es','pt','cs','pl'];
+  const LANG_NAMES = {ru:'Русский', uk:'Українська', en:'English', de:'Deutsch', es:'Español', pt:'Português', cs:'Čeština', pl:'Polski'};
+  const LOCALE_MAP = {ru:'ru-RU', uk:'uk-UA', en:'en-US', de:'de-DE', es:'es-ES', pt:'pt-PT', cs:'cs-CZ', pl:'pl-PL'};
+  const I18N = {
+    ru:{
+      'brand.name':'Щитовая','app.tagline':'Маркировка электрощитов','list.title':'Проекты',
+      'list.subtitle':'Фото щита — метки на проводах и модулях — всё сохраняется прямо здесь.',
+      'empty.title':'Пока нет ни одного щита','empty.desc':'Загрузите фото электрощита, чтобы начать расставлять метки на проводах и модулях.',
+      'btn.uploadPhoto':'Загрузить фото','list.newTile':'Новый щит','mode.edit':'Редактор','mode.view':'Просмотр',
+      'size.title':'Размер меток на фото','markers.heading':'Метки','markers.emptyPanel':'Меток пока нет. Нажмите на фото щита, чтобы отметить провод, модуль или автомат.',
+      'fab.newProject':'Новый проект','modal.newProject.title':'Новый щит','field.name':'Название','placeholder.projectName':'Например: Щит квартиры, 3 этаж',
+      'field.photo':'Фото щита','upload.prompt':'Нажмите, чтобы выбрать фото','upload.processing':'Обработка фото…','upload.selected':'Фото выбрано — можно заменить','upload.error':'Не удалось обработать фото, попробуйте другое',
+      'btn.cancel':'Отмена','btn.create':'Создать','btn.uploadingPhoto':'Загружаем фото…','btn.saving':'Сохраняем…',
+      'marker.modal.newTitle':'Новая метка','marker.modal.editTitle':'Метка','field.type':'Тип','type.wire':'Провод','type.module':'Модуль','type.note':'Заметка',
+      'field.label':'Обозначение','placeholder.markerLabel':'Например: L1, N, QF3','field.desc':'Описание','placeholder.markerDesc':'Например: фаза на розетки кухни, автомат 16А',
+      'btn.delete':'Удалить','btn.save':'Сохранить','btn.back':'К проектам','btn.exportPdf':'Сохранить в PDF','btn.deleteProject':'Удалить проект',
+      'confirm.deleteMarker.title':'Удалить метку?','confirm.deleteMarker.text':'Описание и позиция метки будут удалены безвозвратно.',
+      'confirm.deleteProject.title':'Удалить проект?','confirm.deleteProject.text':'Фото и все метки проекта «{name}» будут удалены безвозвратно.',
+      'marker.defaultLabel':'Метка {n}','popup.noLabel':'Без обозначения','popup.noDesc':'Без описания',
+      'hint.edit':'Нажмите на фото, чтобы поставить метку','hint.view':'В этом проекте пока нет меток','loading.projects':'Загрузка проектов…',
+      'toast.projectCreated':'Проект создан','toast.projectDeleted':'Проект удалён','toast.uploadPhotoFirst':'Сначала выберите фото щита',
+      'toast.uploadFailed':'Не получилось загрузить фото. Проверьте связь и попробуйте снова','toast.saveProjectFailed':'Не получилось сохранить проект. Проверьте связь и попробуйте снова',
+      'toast.markerNeedsContent':'Добавьте обозначение или описание','toast.openProjectFailed':'Не удалось открыть проект',
+      'toast.storageUnavailable':'Хранилище недоступно — проверьте подключение к Supabase','toast.sbNotConfigured':'Впишите SUPABASE_URL и SUPABASE_ANON_KEY в код сайта, чтобы включить сохранение',
+      'toast.sbSaveFailed':'Не удалось сохранить в Supabase — проверьте связь','toast.pdfPhotoFailed':'Не удалось загрузить фото для сохранения в PDF',
+      'toast.sbLibFailed':'Не удалось загрузить библиотеку Supabase. Проверьте интернет-соединение и перезагрузите страницу.',
+      'print.noMarkers':'Меток пока нет.','editor.subtitle':'Редактирование щита','project.untitled':'Без названия'
+    },
+    uk:{
+      'brand.name':'Щитова','app.tagline':'Маркування електрощитів','list.title':'Проєкти',
+      'list.subtitle':'Фото щита — мітки на дротах і модулях — усе зберігається прямо тут.',
+      'empty.title':'Поки немає жодного щита','empty.desc':'Завантажте фото електрощита, щоб почати розставляти мітки на дротах і модулях.',
+      'btn.uploadPhoto':'Завантажити фото','list.newTile':'Новий щит','mode.edit':'Редактор','mode.view':'Перегляд',
+      'size.title':'Розмір міток на фото','markers.heading':'Мітки','markers.emptyPanel':'Міток поки немає. Натисніть на фото щита, щоб позначити провід, модуль або автомат.',
+      'fab.newProject':'Новий проєкт','modal.newProject.title':'Новий щит','field.name':'Назва','placeholder.projectName':'Наприклад: Щит квартири, 3 поверх',
+      'field.photo':'Фото щита','upload.prompt':'Натисніть, щоб вибрати фото','upload.processing':'Обробка фото…','upload.selected':'Фото вибрано — можна замінити','upload.error':'Не вдалося обробити фото, спробуйте інше',
+      'btn.cancel':'Скасувати','btn.create':'Створити','btn.uploadingPhoto':'Завантажуємо фото…','btn.saving':'Зберігаємо…',
+      'marker.modal.newTitle':'Нова мітка','marker.modal.editTitle':'Мітка','field.type':'Тип','type.wire':'Провід','type.module':'Модуль','type.note':'Нотатка',
+      'field.label':'Позначення','placeholder.markerLabel':'Наприклад: L1, N, QF3','field.desc':'Опис','placeholder.markerDesc':'Наприклад: фаза на розетки кухні, автомат 16А',
+      'btn.delete':'Видалити','btn.save':'Зберегти','btn.back':'До проєктів','btn.exportPdf':'Зберегти в PDF','btn.deleteProject':'Видалити проєкт',
+      'confirm.deleteMarker.title':'Видалити мітку?','confirm.deleteMarker.text':'Опис і позиція мітки будуть видалені назавжди.',
+      'confirm.deleteProject.title':'Видалити проєкт?','confirm.deleteProject.text':'Фото і всі мітки проєкту «{name}» будуть видалені назавжди.',
+      'marker.defaultLabel':'Мітка {n}','popup.noLabel':'Без позначення','popup.noDesc':'Без опису',
+      'hint.edit':'Натисніть на фото, щоб поставити мітку','hint.view':'У цьому проєкті поки немає міток','loading.projects':'Завантаження проєктів…',
+      'toast.projectCreated':'Проєкт створено','toast.projectDeleted':'Проєкт видалено','toast.uploadPhotoFirst':'Спочатку виберіть фото щита',
+      'toast.uploadFailed':'Не вдалося завантажити фото. Перевірте з’єднання і спробуйте ще раз','toast.saveProjectFailed':'Не вдалося зберегти проєкт. Перевірте з’єднання і спробуйте ще раз',
+      'toast.markerNeedsContent':'Додайте позначення або опис','toast.openProjectFailed':'Не вдалося відкрити проєкт',
+      'toast.storageUnavailable':'Сховище недоступне — перевірте підключення до Supabase','toast.sbNotConfigured':'Впишіть SUPABASE_URL і SUPABASE_ANON_KEY у код сайту, щоб увімкнути збереження',
+      'toast.sbSaveFailed':'Не вдалося зберегти в Supabase — перевірте з’єднання','toast.pdfPhotoFailed':'Не вдалося завантажити фото для збереження в PDF',
+      'toast.sbLibFailed':'Не вдалося завантажити бібліотеку Supabase. Перевірте інтернет-з’єднання і перезавантажте сторінку.',
+      'print.noMarkers':'Міток поки немає.','editor.subtitle':'Редагування щита','project.untitled':'Без назви'
+    },
+    en:{
+      'brand.name':'PanelBoard','app.tagline':'Electrical panel labeling','list.title':'Projects',
+      'list.subtitle':'Photo of the panel — markers on wires and modules — all saved right here.',
+      'empty.title':'No panels yet','empty.desc':'Upload a photo of an electrical panel to start marking wires and modules.',
+      'btn.uploadPhoto':'Upload photo','list.newTile':'New panel','mode.edit':'Edit','mode.view':'View',
+      'size.title':'Marker size on photo','markers.heading':'Markers','markers.emptyPanel':'No markers yet. Tap the photo to mark a wire, module, or breaker.',
+      'fab.newProject':'New project','modal.newProject.title':'New panel','field.name':'Name','placeholder.projectName':'E.g.: Apartment panel, 3rd floor',
+      'field.photo':'Panel photo','upload.prompt':'Tap to choose a photo','upload.processing':'Processing photo…','upload.selected':'Photo selected — tap to replace','upload.error':'Could not process the photo, try another one',
+      'btn.cancel':'Cancel','btn.create':'Create','btn.uploadingPhoto':'Uploading photo…','btn.saving':'Saving…',
+      'marker.modal.newTitle':'New marker','marker.modal.editTitle':'Marker','field.type':'Type','type.wire':'Wire','type.module':'Module','type.note':'Note',
+      'field.label':'Label','placeholder.markerLabel':'E.g.: L1, N, QF3','field.desc':'Description','placeholder.markerDesc':'E.g.: phase to kitchen outlets, 16A breaker',
+      'btn.delete':'Delete','btn.save':'Save','btn.back':'Back to projects','btn.exportPdf':'Save as PDF','btn.deleteProject':'Delete project',
+      'confirm.deleteMarker.title':'Delete this marker?','confirm.deleteMarker.text':'The description and position of the marker will be permanently deleted.',
+      'confirm.deleteProject.title':'Delete this project?','confirm.deleteProject.text':'The photo and all markers in project "{name}" will be permanently deleted.',
+      'marker.defaultLabel':'Marker {n}','popup.noLabel':'No label','popup.noDesc':'No description',
+      'hint.edit':'Tap the photo to place a marker','hint.view':'This project has no markers yet','loading.projects':'Loading projects…',
+      'toast.projectCreated':'Project created','toast.projectDeleted':'Project deleted','toast.uploadPhotoFirst':'Please choose a panel photo first',
+      'toast.uploadFailed':'Could not upload the photo. Check your connection and try again','toast.saveProjectFailed':'Could not save the project. Check your connection and try again',
+      'toast.markerNeedsContent':'Add a label or a description','toast.openProjectFailed':'Could not open the project',
+      'toast.storageUnavailable':'Storage unavailable — check your Supabase connection','toast.sbNotConfigured':'Fill in SUPABASE_URL and SUPABASE_ANON_KEY in the site code to enable saving',
+      'toast.sbSaveFailed':'Could not save to Supabase — check your connection','toast.pdfPhotoFailed':'Could not load the photo for the PDF',
+      'toast.sbLibFailed':'Could not load the Supabase library. Check your internet connection and reload the page.',
+      'print.noMarkers':'No markers yet.','editor.subtitle':'Editing panel','project.untitled':'Untitled'
+    },
+    de:{
+      'brand.name':'Verteiler','app.tagline':'Kennzeichnung von Elektroverteilern','list.title':'Projekte',
+      'list.subtitle':'Foto des Verteilers — Markierungen an Leitungen und Modulen — alles wird direkt hier gespeichert.',
+      'empty.title':'Noch kein Verteiler vorhanden','empty.desc':'Laden Sie ein Foto eines Elektroverteilers hoch, um Leitungen und Module zu markieren.',
+      'btn.uploadPhoto':'Foto hochladen','list.newTile':'Neuer Verteiler','mode.edit':'Bearbeiten','mode.view':'Ansicht',
+      'size.title':'Markierungsgröße auf dem Foto','markers.heading':'Markierungen','markers.emptyPanel':'Noch keine Markierungen. Tippen Sie auf das Foto, um eine Leitung, ein Modul oder einen Automaten zu markieren.',
+      'fab.newProject':'Neues Projekt','modal.newProject.title':'Neuer Verteiler','field.name':'Name','placeholder.projectName':'Z. B.: Verteiler Wohnung, 3. Stock',
+      'field.photo':'Foto des Verteilers','upload.prompt':'Tippen, um ein Foto auszuwählen','upload.processing':'Foto wird verarbeitet…','upload.selected':'Foto ausgewählt — zum Ersetzen tippen','upload.error':'Foto konnte nicht verarbeitet werden, bitte ein anderes versuchen',
+      'btn.cancel':'Abbrechen','btn.create':'Erstellen','btn.uploadingPhoto':'Foto wird hochgeladen…','btn.saving':'Wird gespeichert…',
+      'marker.modal.newTitle':'Neue Markierung','marker.modal.editTitle':'Markierung','field.type':'Typ','type.wire':'Leitung','type.module':'Modul','type.note':'Notiz',
+      'field.label':'Bezeichnung','placeholder.markerLabel':'Z. B.: L1, N, QF3','field.desc':'Beschreibung','placeholder.markerDesc':'Z. B.: Phase zu Küchensteckdosen, 16A-Automat',
+      'btn.delete':'Löschen','btn.save':'Speichern','btn.back':'Zu den Projekten','btn.exportPdf':'Als PDF speichern','btn.deleteProject':'Projekt löschen',
+      'confirm.deleteMarker.title':'Markierung löschen?','confirm.deleteMarker.text':'Beschreibung und Position der Markierung werden endgültig gelöscht.',
+      'confirm.deleteProject.title':'Projekt löschen?','confirm.deleteProject.text':'Das Foto und alle Markierungen des Projekts „{name}“ werden endgültig gelöscht.',
+      'marker.defaultLabel':'Markierung {n}','popup.noLabel':'Keine Bezeichnung','popup.noDesc':'Keine Beschreibung',
+      'hint.edit':'Auf das Foto tippen, um eine Markierung zu setzen','hint.view':'Dieses Projekt hat noch keine Markierungen','loading.projects':'Projekte werden geladen…',
+      'toast.projectCreated':'Projekt erstellt','toast.projectDeleted':'Projekt gelöscht','toast.uploadPhotoFirst':'Bitte zuerst ein Foto des Verteilers auswählen',
+      'toast.uploadFailed':'Foto konnte nicht hochgeladen werden. Verbindung prüfen und erneut versuchen','toast.saveProjectFailed':'Projekt konnte nicht gespeichert werden. Verbindung prüfen und erneut versuchen',
+      'toast.markerNeedsContent':'Bezeichnung oder Beschreibung hinzufügen','toast.openProjectFailed':'Projekt konnte nicht geöffnet werden',
+      'toast.storageUnavailable':'Speicher nicht verfügbar — Supabase-Verbindung prüfen','toast.sbNotConfigured':'SUPABASE_URL und SUPABASE_ANON_KEY im Code eintragen, um das Speichern zu aktivieren',
+      'toast.sbSaveFailed':'Speichern in Supabase fehlgeschlagen — Verbindung prüfen','toast.pdfPhotoFailed':'Foto für das PDF konnte nicht geladen werden',
+      'toast.sbLibFailed':'Supabase-Bibliothek konnte nicht geladen werden. Internetverbindung prüfen und Seite neu laden.',
+      'print.noMarkers':'Noch keine Markierungen.','editor.subtitle':'Verteiler bearbeiten','project.untitled':'Ohne Namen'
+    },
+    es:{
+      'brand.name':'Cuadro','app.tagline':'Etiquetado de cuadros eléctricos','list.title':'Proyectos',
+      'list.subtitle':'Foto del cuadro — marcadores en cables y módulos — todo se guarda aquí mismo.',
+      'empty.title':'Aún no hay ningún cuadro','empty.desc':'Sube una foto de un cuadro eléctrico para empezar a marcar cables y módulos.',
+      'btn.uploadPhoto':'Subir foto','list.newTile':'Nuevo cuadro','mode.edit':'Editar','mode.view':'Ver',
+      'size.title':'Tamaño de los marcadores en la foto','markers.heading':'Marcadores','markers.emptyPanel':'Aún no hay marcadores. Toca la foto para marcar un cable, módulo o interruptor.',
+      'fab.newProject':'Nuevo proyecto','modal.newProject.title':'Nuevo cuadro','field.name':'Nombre','placeholder.projectName':'Ej.: Cuadro del piso, 3ª planta',
+      'field.photo':'Foto del cuadro','upload.prompt':'Toca para elegir una foto','upload.processing':'Procesando foto…','upload.selected':'Foto seleccionada — toca para cambiarla','upload.error':'No se pudo procesar la foto, prueba con otra',
+      'btn.cancel':'Cancelar','btn.create':'Crear','btn.uploadingPhoto':'Subiendo foto…','btn.saving':'Guardando…',
+      'marker.modal.newTitle':'Nuevo marcador','marker.modal.editTitle':'Marcador','field.type':'Tipo','type.wire':'Cable','type.module':'Módulo','type.note':'Nota',
+      'field.label':'Etiqueta','placeholder.markerLabel':'Ej.: L1, N, QF3','field.desc':'Descripción','placeholder.markerDesc':'Ej.: fase a enchufes de cocina, interruptor de 16A',
+      'btn.delete':'Eliminar','btn.save':'Guardar','btn.back':'A los proyectos','btn.exportPdf':'Guardar como PDF','btn.deleteProject':'Eliminar proyecto',
+      'confirm.deleteMarker.title':'¿Eliminar este marcador?','confirm.deleteMarker.text':'La descripción y la posición del marcador se eliminarán de forma permanente.',
+      'confirm.deleteProject.title':'¿Eliminar este proyecto?','confirm.deleteProject.text':'La foto y todos los marcadores del proyecto «{name}» se eliminarán de forma permanente.',
+      'marker.defaultLabel':'Marcador {n}','popup.noLabel':'Sin etiqueta','popup.noDesc':'Sin descripción',
+      'hint.edit':'Toca la foto para colocar un marcador','hint.view':'Este proyecto aún no tiene marcadores','loading.projects':'Cargando proyectos…',
+      'toast.projectCreated':'Proyecto creado','toast.projectDeleted':'Proyecto eliminado','toast.uploadPhotoFirst':'Primero elige una foto del cuadro',
+      'toast.uploadFailed':'No se pudo subir la foto. Comprueba tu conexión e inténtalo de nuevo','toast.saveProjectFailed':'No se pudo guardar el proyecto. Comprueba tu conexión e inténtalo de nuevo',
+      'toast.markerNeedsContent':'Añade una etiqueta o una descripción','toast.openProjectFailed':'No se pudo abrir el proyecto',
+      'toast.storageUnavailable':'Almacenamiento no disponible — comprueba la conexión con Supabase','toast.sbNotConfigured':'Escribe SUPABASE_URL y SUPABASE_ANON_KEY en el código del sitio para habilitar el guardado',
+      'toast.sbSaveFailed':'No se pudo guardar en Supabase — comprueba tu conexión','toast.pdfPhotoFailed':'No se pudo cargar la foto para el PDF',
+      'toast.sbLibFailed':'No se pudo cargar la librería de Supabase. Comprueba tu conexión a internet y recarga la página.',
+      'print.noMarkers':'Aún no hay marcadores.','editor.subtitle':'Editando cuadro','project.untitled':'Sin nombre'
+    },
+    pt:{
+      'brand.name':'Quadro','app.tagline':'Marcação de quadros elétricos','list.title':'Projetos',
+      'list.subtitle':'Foto do quadro — marcadores nos fios e módulos — tudo guardado aqui mesmo.',
+      'empty.title':'Ainda não há nenhum quadro','empty.desc':'Carregue uma foto de um quadro elétrico para começar a marcar fios e módulos.',
+      'btn.uploadPhoto':'Carregar foto','list.newTile':'Novo quadro','mode.edit':'Editar','mode.view':'Ver',
+      'size.title':'Tamanho dos marcadores na foto','markers.heading':'Marcadores','markers.emptyPanel':'Ainda não há marcadores. Toque na foto para marcar um fio, módulo ou disjuntor.',
+      'fab.newProject':'Novo projeto','modal.newProject.title':'Novo quadro','field.name':'Nome','placeholder.projectName':'Ex.: Quadro do apartamento, 3º andar',
+      'field.photo':'Foto do quadro','upload.prompt':'Toque para escolher uma foto','upload.processing':'A processar a foto…','upload.selected':'Foto selecionada — toque para substituir','upload.error':'Não foi possível processar a foto, tente outra',
+      'btn.cancel':'Cancelar','btn.create':'Criar','btn.uploadingPhoto':'A carregar a foto…','btn.saving':'A guardar…',
+      'marker.modal.newTitle':'Novo marcador','marker.modal.editTitle':'Marcador','field.type':'Tipo','type.wire':'Fio','type.module':'Módulo','type.note':'Nota',
+      'field.label':'Etiqueta','placeholder.markerLabel':'Ex.: L1, N, QF3','field.desc':'Descrição','placeholder.markerDesc':'Ex.: fase para tomadas da cozinha, disjuntor de 16A',
+      'btn.delete':'Eliminar','btn.save':'Guardar','btn.back':'Voltar aos projetos','btn.exportPdf':'Guardar como PDF','btn.deleteProject':'Eliminar projeto',
+      'confirm.deleteMarker.title':'Eliminar este marcador?','confirm.deleteMarker.text':'A descrição e a posição do marcador serão eliminadas permanentemente.',
+      'confirm.deleteProject.title':'Eliminar este projeto?','confirm.deleteProject.text':'A foto e todos os marcadores do projeto «{name}» serão eliminados permanentemente.',
+      'marker.defaultLabel':'Marcador {n}','popup.noLabel':'Sem etiqueta','popup.noDesc':'Sem descrição',
+      'hint.edit':'Toque na foto para colocar um marcador','hint.view':'Este projeto ainda não tem marcadores','loading.projects':'A carregar projetos…',
+      'toast.projectCreated':'Projeto criado','toast.projectDeleted':'Projeto eliminado','toast.uploadPhotoFirst':'Escolha primeiro uma foto do quadro',
+      'toast.uploadFailed':'Não foi possível carregar a foto. Verifique a ligação e tente novamente','toast.saveProjectFailed':'Não foi possível guardar o projeto. Verifique a ligação e tente novamente',
+      'toast.markerNeedsContent':'Adicione uma etiqueta ou uma descrição','toast.openProjectFailed':'Não foi possível abrir o projeto',
+      'toast.storageUnavailable':'Armazenamento indisponível — verifique a ligação ao Supabase','toast.sbNotConfigured':'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no código do site para ativar o guardado',
+      'toast.sbSaveFailed':'Não foi possível guardar no Supabase — verifique a ligação','toast.pdfPhotoFailed':'Não foi possível carregar a foto para o PDF',
+      'toast.sbLibFailed':'Não foi possível carregar a biblioteca do Supabase. Verifique a ligação à internet e recarregue a página.',
+      'print.noMarkers':'Ainda não há marcadores.','editor.subtitle':'A editar o quadro','project.untitled':'Sem nome'
+    },
+    cs:{
+      'brand.name':'Rozvaděč','app.tagline':'Značení elektrických rozvaděčů','list.title':'Projekty',
+      'list.subtitle':'Foto rozvaděče — značky na vodičích a modulech — vše se ukládá přímo zde.',
+      'empty.title':'Zatím žádný rozvaděč','empty.desc':'Nahrajte fotku elektrického rozvaděče a začněte značit vodiče a moduly.',
+      'btn.uploadPhoto':'Nahrát fotku','list.newTile':'Nový rozvaděč','mode.edit':'Úpravy','mode.view':'Prohlížení',
+      'size.title':'Velikost značek na fotce','markers.heading':'Značky','markers.emptyPanel':'Zatím žádné značky. Klepněte na fotku a označte vodič, modul nebo jistič.',
+      'fab.newProject':'Nový projekt','modal.newProject.title':'Nový rozvaděč','field.name':'Název','placeholder.projectName':'Např.: Rozvaděč byt, 3. patro',
+      'field.photo':'Fotka rozvaděče','upload.prompt':'Klepněte pro výběr fotky','upload.processing':'Zpracování fotky…','upload.selected':'Fotka vybrána — klepněte pro výměnu','upload.error':'Fotku se nepodařilo zpracovat, zkuste jinou',
+      'btn.cancel':'Zrušit','btn.create':'Vytvořit','btn.uploadingPhoto':'Nahrávání fotky…','btn.saving':'Ukládání…',
+      'marker.modal.newTitle':'Nová značka','marker.modal.editTitle':'Značka','field.type':'Typ','type.wire':'Vodič','type.module':'Modul','type.note':'Poznámka',
+      'field.label':'Označení','placeholder.markerLabel':'Např.: L1, N, QF3','field.desc':'Popis','placeholder.markerDesc':'Např.: fáze na zásuvky v kuchyni, jistič 16A',
+      'btn.delete':'Smazat','btn.save':'Uložit','btn.back':'Zpět na projekty','btn.exportPdf':'Uložit jako PDF','btn.deleteProject':'Smazat projekt',
+      'confirm.deleteMarker.title':'Smazat tuto značku?','confirm.deleteMarker.text':'Popis a pozice značky budou trvale smazány.',
+      'confirm.deleteProject.title':'Smazat tento projekt?','confirm.deleteProject.text':'Fotka a všechny značky projektu „{name}“ budou trvale smazány.',
+      'marker.defaultLabel':'Značka {n}','popup.noLabel':'Bez označení','popup.noDesc':'Bez popisu',
+      'hint.edit':'Klepněte na fotku pro umístění značky','hint.view':'Tento projekt zatím nemá žádné značky','loading.projects':'Načítání projektů…',
+      'toast.projectCreated':'Projekt vytvořen','toast.projectDeleted':'Projekt smazán','toast.uploadPhotoFirst':'Nejprve vyberte fotku rozvaděče',
+      'toast.uploadFailed':'Fotku se nepodařilo nahrát. Zkontrolujte připojení a zkuste to znovu','toast.saveProjectFailed':'Projekt se nepodařilo uložit. Zkontrolujte připojení a zkuste to znovu',
+      'toast.markerNeedsContent':'Přidejte označení nebo popis','toast.openProjectFailed':'Projekt se nepodařilo otevřít',
+      'toast.storageUnavailable':'Úložiště nedostupné — zkontrolujte připojení k Supabase','toast.sbNotConfigured':'Vyplňte SUPABASE_URL a SUPABASE_ANON_KEY v kódu webu pro zapnutí ukládání',
+      'toast.sbSaveFailed':'Uložení do Supabase se nezdařilo — zkontrolujte připojení','toast.pdfPhotoFailed':'Fotku pro PDF se nepodařilo načíst',
+      'toast.sbLibFailed':'Knihovnu Supabase se nepodařilo načíst. Zkontrolujte internetové připojení a načtěte stránku znovu.',
+      'print.noMarkers':'Zatím žádné značky.','editor.subtitle':'Úprava rozvaděče','project.untitled':'Bez názvu'
+    },
+    pl:{
+      'brand.name':'Rozdzielnia','app.tagline':'Oznaczanie rozdzielnic elektrycznych','list.title':'Projekty',
+      'list.subtitle':'Zdjęcie rozdzielnicy — znaczniki na przewodach i modułach — wszystko zapisywane tutaj.',
+      'empty.title':'Nie ma jeszcze żadnej rozdzielnicy','empty.desc':'Prześlij zdjęcie rozdzielnicy elektrycznej, aby zacząć oznaczać przewody i moduły.',
+      'btn.uploadPhoto':'Prześlij zdjęcie','list.newTile':'Nowa rozdzielnica','mode.edit':'Edycja','mode.view':'Podgląd',
+      'size.title':'Rozmiar znaczników na zdjęciu','markers.heading':'Znaczniki','markers.emptyPanel':'Brak znaczników. Dotknij zdjęcia, aby oznaczyć przewód, moduł lub wyłącznik.',
+      'fab.newProject':'Nowy projekt','modal.newProject.title':'Nowa rozdzielnica','field.name':'Nazwa','placeholder.projectName':'Np.: Rozdzielnica mieszkania, 3 piętro',
+      'field.photo':'Zdjęcie rozdzielnicy','upload.prompt':'Dotknij, aby wybrać zdjęcie','upload.processing':'Przetwarzanie zdjęcia…','upload.selected':'Zdjęcie wybrane — dotknij, aby zmienić','upload.error':'Nie udało się przetworzyć zdjęcia, spróbuj innego',
+      'btn.cancel':'Anuluj','btn.create':'Utwórz','btn.uploadingPhoto':'Przesyłanie zdjęcia…','btn.saving':'Zapisywanie…',
+      'marker.modal.newTitle':'Nowy znacznik','marker.modal.editTitle':'Znacznik','field.type':'Typ','type.wire':'Przewód','type.module':'Moduł','type.note':'Notatka',
+      'field.label':'Oznaczenie','placeholder.markerLabel':'Np.: L1, N, QF3','field.desc':'Opis','placeholder.markerDesc':'Np.: faza do gniazdek w kuchni, wyłącznik 16A',
+      'btn.delete':'Usuń','btn.save':'Zapisz','btn.back':'Do projektów','btn.exportPdf':'Zapisz jako PDF','btn.deleteProject':'Usuń projekt',
+      'confirm.deleteMarker.title':'Usunąć ten znacznik?','confirm.deleteMarker.text':'Opis i pozycja znacznika zostaną trwale usunięte.',
+      'confirm.deleteProject.title':'Usunąć ten projekt?','confirm.deleteProject.text':'Zdjęcie i wszystkie znaczniki projektu „{name}” zostaną trwale usunięte.',
+      'marker.defaultLabel':'Znacznik {n}','popup.noLabel':'Bez oznaczenia','popup.noDesc':'Bez opisu',
+      'hint.edit':'Dotknij zdjęcia, aby umieścić znacznik','hint.view':'Ten projekt nie ma jeszcze znaczników','loading.projects':'Ładowanie projektów…',
+      'toast.projectCreated':'Projekt utworzony','toast.projectDeleted':'Projekt usunięty','toast.uploadPhotoFirst':'Najpierw wybierz zdjęcie rozdzielnicy',
+      'toast.uploadFailed':'Nie udało się przesłać zdjęcia. Sprawdź połączenie i spróbuj ponownie','toast.saveProjectFailed':'Nie udało się zapisać projektu. Sprawdź połączenie i spróbuj ponownie',
+      'toast.markerNeedsContent':'Dodaj oznaczenie lub opis','toast.openProjectFailed':'Nie udało się otworzyć projektu',
+      'toast.storageUnavailable':'Magazyn niedostępny — sprawdź połączenie z Supabase','toast.sbNotConfigured':'Wpisz SUPABASE_URL i SUPABASE_ANON_KEY w kodzie strony, aby włączyć zapisywanie',
+      'toast.sbSaveFailed':'Nie udało się zapisać w Supabase — sprawdź połączenie','toast.pdfPhotoFailed':'Nie udało się wczytać zdjęcia do PDF',
+      'toast.sbLibFailed':'Nie udało się wczytać biblioteki Supabase. Sprawdź połączenie z internetem i odśwież stronę.',
+      'print.noMarkers':'Brak znaczników.','editor.subtitle':'Edycja rozdzielnicy','project.untitled':'Bez nazwy'
+    }
+  };
+  let currentLang = 'ru';
+  function t(key, params){
+    let s = (I18N[currentLang] && I18N[currentLang][key]) || I18N.ru[key] || key;
+    if(params){ Object.keys(params).forEach(k=>{ s = s.replace('{'+k+'}', params[k]); }); }
+    return s;
+  }
+  const LANG_KEY = 'schitovaya:lang';
+  function detectInitialLang(){
+    try{
+      const stored = localStorage.getItem(LANG_KEY);
+      if(stored && LANGS.includes(stored)) return stored;
+    }catch(e){}
+    const nav = (navigator.language || 'ru').slice(0,2).toLowerCase();
+    return LANGS.includes(nav) ? nav : 'ru';
+  }
+  function applyLanguage(lang){
+    currentLang = LANGS.includes(lang) ? lang : 'ru';
+    document.documentElement.lang = currentLang;
+    document.title = t('brand.name') + ' — ' + t('app.tagline');
+    document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{ el.placeholder = t(el.dataset.i18nPlaceholder); });
+    document.querySelectorAll('[data-i18n-title]').forEach(el=>{ el.title = t(el.dataset.i18nTitle); });
+    if(langSelect) langSelect.value = currentLang;
+    try{ localStorage.setItem(LANG_KEY, currentLang); }catch(e){}
+    // Refresh dynamically-generated content that isn't covered by data-i18n
+    if(currentProject && !viewEditor.hidden){
+      updateStageHint();
+      renderMarkerList();
+      editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + currentProject.markers.length;
+    }
+    if(!viewList.hidden){ renderProjectGrid(); }
+  }
+  LANGS.forEach(code=>{
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = LANG_NAMES[code];
+    langSelect.appendChild(opt);
+  });
+  langSelect.addEventListener('change', ()=>applyLanguage(langSelect.value));
+
   function toast(msg){
     toastEl.textContent = msg;
     toastEl.classList.add('show');
@@ -698,7 +946,7 @@
 
   function fmtDate(ts){
     const d = new Date(ts);
-    return d.toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
+    return d.toLocaleDateString(LOCALE_MAP[currentLang] || 'ru-RU', {day:'2-digit', month:'short'});
   }
 
   /* ---------------- Storage (Supabase — shared across devices/browsers) ---------------- */
@@ -768,7 +1016,7 @@
       const {error} = await client.from('projects').upsert(projectToRow(currentProject));
       if(error) throw error;
       return true;
-    }catch(e){ toast('Не удалось сохранить в Supabase — проверьте связь'); return false; }
+    }catch(e){ toast(t('toast.sbSaveFailed')); return false; }
   }
   async function deleteProjectStorage(id){
     const client = getClient();
@@ -820,7 +1068,7 @@
     btnExport.hidden = true;
     btnDeleteProject.hidden = true;
     fab.hidden = false;
-    brandSub.textContent = 'Маркировка электрощитов';
+    brandSub.textContent = t('app.tagline');
     currentProject = null;
     renderProjectGrid();
   }
@@ -833,10 +1081,10 @@
     btnExport.hidden = false;
     btnDeleteProject.hidden = false;
     fab.hidden = true;
-    brandSub.textContent = 'Редактирование щита';
+    brandSub.textContent = t('editor.subtitle');
     projectNameInput.value = project.name;
     stageImage.src = project.image;
-    editorSub.textContent = fmtDate(project.updatedAt) + ' · ' + project.markers.length + ' ' + markerWord(project.markers.length);
+    editorSub.textContent = fmtDate(project.updatedAt) + ' · ' + t('markers.heading') + ': ' + project.markers.length;
     applyPinSize(project.pinSize || 13);
     setMode('edit');
     renderPins();
@@ -860,8 +1108,8 @@
       return;
     }
     stageHint.textContent = editorMode === 'edit'
-      ? 'Нажмите на фото, чтобы поставить метку'
-      : 'В этом проекте пока нет меток';
+      ? t('hint.edit')
+      : t('hint.view');
     stageHint.classList.remove('hidden');
   }
 
@@ -872,8 +1120,8 @@
   }
   function showMarkerInfoPopup(m){
     popupDot.className = 'popup-dot type-' + m.type;
-    popupTitle.textContent = m.label || 'Без обозначения';
-    popupDesc.textContent = m.desc || '';
+    popupTitle.textContent = m.label || t('popup.noLabel');
+    popupDesc.textContent = m.desc || t('popup.noDesc');
     markerInfoPopup.hidden = false;
   }
   function hideMarkerInfoPopup(){
@@ -882,15 +1130,6 @@
     updatePinSelection();
   }
   popupClose.addEventListener('click', hideMarkerInfoPopup);
-
-  function markerWord(n){
-    const m = Math.abs(n)%100;
-    const m1 = m%10;
-    if(m>10 && m<20) return 'меток';
-    if(m1===1) return 'метка';
-    if(m1>=2 && m1<=4) return 'метки';
-    return 'меток';
-  }
 
   /* ---------------- Project list rendering ---------------- */
   function renderProjectGrid(){
@@ -905,7 +1144,7 @@
 
     const newTile = document.createElement('button');
     newTile.className = 'new-project-tile';
-    newTile.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg><span>Новый щит</span>`;
+    newTile.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg><span>${escapeHtml(t('list.newTile'))}</span>`;
     newTile.addEventListener('click', openNewProjectModal);
     projectGrid.appendChild(newTile);
 
@@ -927,7 +1166,7 @@
       card.addEventListener('click', async ()=>{
         const full = await loadProject(p.id);
         if(full){ showEditor(full); }
-        else{ toast('Не удалось открыть проект'); }
+        else{ toast(t('toast.openProjectFailed')); }
       });
       projectGrid.appendChild(card);
     });
@@ -946,12 +1185,12 @@
   function openNewProjectModal(){
     newProjectName.value = '';
     uploadPreview.hidden = true;
-    uploadDropLabel.textContent = 'Нажмите, чтобы выбрать фото';
+    uploadDropLabel.textContent = t('upload.prompt');
     pendingImageFull = null;
     pendingImageThumb = null;
     fileInput.value = '';
     btnCreateProject.disabled = false;
-    btnCreateProject.textContent = 'Создать';
+    btnCreateProject.textContent = t('btn.create');
     modalNewProject.hidden = false;
   }
   function closeNewProjectModal(){ modalNewProject.hidden = true; }
@@ -959,7 +1198,7 @@
   fileInput.addEventListener('change', async ()=>{
     const file = fileInput.files[0];
     if(!file) return;
-    uploadDropLabel.textContent = 'Обработка фото…';
+    uploadDropLabel.textContent = t('upload.processing');
     try{
       const [full, thumb] = await Promise.all([
         resizeImage(file, 1100, 0.68),
@@ -969,25 +1208,25 @@
       pendingImageThumb = thumb;
       uploadPreview.src = full;
       uploadPreview.hidden = false;
-      uploadDropLabel.textContent = 'Фото выбрано — можно заменить';
+      uploadDropLabel.textContent = t('upload.selected');
       if(!newProjectName.value){
         newProjectName.value = file.name.replace(/\.[a-zA-Z0-9]+$/, '').slice(0,60);
       }
     }catch(e){
-      uploadDropLabel.textContent = 'Не удалось обработать фото, попробуйте другое';
+      uploadDropLabel.textContent = t('upload.error');
     }
   });
 
   btnCancelNewProject.addEventListener('click', closeNewProjectModal);
 
   btnCreateProject.addEventListener('click', async ()=>{
-    if(!pendingImageFull){ toast('Сначала выберите фото щита'); return; }
-    const name = newProjectName.value.trim() || 'Без названия';
+    if(!pendingImageFull){ toast(t('toast.uploadPhotoFirst')); return; }
+    const name = newProjectName.value.trim() || t('project.untitled');
     const now = Date.now();
     const id = uid();
 
     btnCreateProject.disabled = true;
-    btnCreateProject.textContent = 'Загружаем фото…';
+    btnCreateProject.textContent = t('btn.uploadingPhoto');
 
     let fullUrl, thumbUrl;
     try{
@@ -997,8 +1236,8 @@
       ]);
     }catch(e){
       btnCreateProject.disabled = false;
-      btnCreateProject.textContent = 'Создать';
-      toast('Не получилось загрузить фото. Проверьте связь и попробуйте снова');
+      btnCreateProject.textContent = t('btn.create');
+      toast(t('toast.uploadFailed'));
       return;
     }
 
@@ -1007,7 +1246,7 @@
       image: fullUrl, thumb: thumbUrl,
       markers: [], pinSize: 13
     };
-    btnCreateProject.textContent = 'Сохраняем…';
+    btnCreateProject.textContent = t('btn.saving');
     currentProject = full;
     const photoSaved = await saveCurrentProject();
 
@@ -1015,18 +1254,18 @@
       // Don't leave a dead card in the list pointing at nothing that was ever saved.
       currentProject = null;
       btnCreateProject.disabled = false;
-      btnCreateProject.textContent = 'Создать';
-      toast('Не получилось сохранить проект. Проверьте связь и попробуйте снова');
+      btnCreateProject.textContent = t('btn.create');
+      toast(t('toast.saveProjectFailed'));
       return;
     }
 
     const summary = { id, name, updatedAt: now, thumb: thumbUrl, markerCount: 0 };
     projects.push(summary);
     btnCreateProject.disabled = false;
-    btnCreateProject.textContent = 'Создать';
+    btnCreateProject.textContent = t('btn.create');
     closeNewProjectModal();
     showEditor(full);
-    toast('Проект создан');
+    toast(t('toast.projectCreated'));
   });
 
   el('btnEmptyCreate').addEventListener('click', openNewProjectModal);
@@ -1036,7 +1275,7 @@
   let nameDebounce = null;
   projectNameInput.addEventListener('input', ()=>{
     if(!currentProject) return;
-    currentProject.name = projectNameInput.value.trim() || 'Без названия';
+    currentProject.name = projectNameInput.value.trim() || t('project.untitled');
     clearTimeout(nameDebounce);
     nameDebounce = setTimeout(async ()=>{
       currentProject.updatedAt = Date.now();
@@ -1053,7 +1292,7 @@
       projects[idx].updatedAt = currentProject.updatedAt;
       projects[idx].markerCount = currentProject.markers.length;
     }
-    editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + currentProject.markers.length + ' ' + markerWord(currentProject.markers.length);
+    editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + currentProject.markers.length;
   }
 
   /* ---------------- Pins & markers ---------------- */
@@ -1139,7 +1378,7 @@
   function renderMarkerList(){
     markerCountLabel.textContent = currentProject.markers.length ? `(${currentProject.markers.length})` : '';
     if(currentProject.markers.length === 0){
-      markerList.innerHTML = '<p class="marker-panel-empty">Меток пока нет. Нажмите на фото щита, чтобы отметить провод, модуль или автомат.</p>';
+      markerList.innerHTML = '<p class="marker-panel-empty">' + escapeHtml(t('markers.emptyPanel')) + '</p>';
       return;
     }
     markerList.innerHTML = '';
@@ -1150,7 +1389,7 @@
       row.innerHTML = `
         <div class="marker-dot type-${m.type}">${m.label && m.label.length<=4 ? escapeHtml(m.label) : (i+1)}</div>
         <div class="marker-row-body">
-          <p class="marker-row-title">${escapeHtml(m.label || ('Метка '+(i+1)))}</p>
+          <p class="marker-row-title">${escapeHtml(m.label || t('marker.defaultLabel', {n: i+1}))}</p>
           <p class="marker-row-desc">${escapeHtml(m.desc || '')}</p>
         </div>`;
       row.addEventListener('click', ()=>{
@@ -1197,13 +1436,13 @@
     editingMarkerId = markerId;
     if(markerId){
       const m = currentProject.markers.find(mm=>mm.id === markerId);
-      markerModalTitle.textContent = 'Метка';
+      markerModalTitle.textContent = t('marker.modal.editTitle');
       markerLabel.value = m.label || '';
       markerDesc.value = m.desc || '';
       setSelectedType(m.type || 'module');
       btnDeleteMarker.hidden = false;
     }else{
-      markerModalTitle.textContent = 'Новая метка';
+      markerModalTitle.textContent = t('marker.modal.newTitle');
       markerLabel.value = '';
       markerDesc.value = '';
       setSelectedType('module');
@@ -1224,7 +1463,7 @@
   btnSaveMarker.addEventListener('click', async ()=>{
     const label = markerLabel.value.trim();
     const desc = markerDesc.value.trim();
-    if(!label && !desc){ toast('Добавьте обозначение или описание'); return; }
+    if(!label && !desc){ toast(t('toast.markerNeedsContent')); return; }
     if(editingMarkerId){
       const m = currentProject.markers.find(mm=>mm.id === editingMarkerId);
       m.label = label; m.desc = desc; m.type = selectedType;
@@ -1246,7 +1485,7 @@
   });
 
   btnDeleteMarker.addEventListener('click', ()=>{
-    askConfirm('Удалить метку?', 'Описание и позиция метки будут удалены безвозвратно.', async ()=>{
+    askConfirm(t('confirm.deleteMarker.title'), t('confirm.deleteMarker.text'), async ()=>{
       currentProject.markers = currentProject.markers.filter(mm=>mm.id !== editingMarkerId);
       currentProject.updatedAt = Date.now();
       closeMarkerModal();
@@ -1259,12 +1498,12 @@
 
   /* ---------------- Delete project ---------------- */
   btnDeleteProject.addEventListener('click', ()=>{
-    askConfirm('Удалить проект?', `Фото и все метки проекта «${currentProject.name}» будут удалены безвозвратно.`, async ()=>{
+    askConfirm(t('confirm.deleteProject.title'), t('confirm.deleteProject.text', {name: currentProject.name}), async ()=>{
       const id = currentProject.id;
       projects = projects.filter(p=>p.id !== id);
       await deleteProjectStorage(id);
       showList();
-      toast('Проект удалён');
+      toast(t('toast.projectDeleted'));
     });
   });
 
@@ -1292,8 +1531,8 @@
   const printImage = el('printImage');
   const printMarkerList = el('printMarkerList');
 
-  function typeLabelRu(type){
-    return type === 'wire' ? 'Провод' : type === 'note' ? 'Заметка' : 'Модуль';
+  function typeLabel(type){
+    return type === 'wire' ? t('type.wire') : type === 'note' ? t('type.note') : t('type.module');
   }
 
   btnExport.addEventListener('click', ()=>{
@@ -1324,12 +1563,12 @@
         ctx.fillText(txt, cx, cy+1);
       });
 
-      printTitle.textContent = currentProject.name || 'Щит';
-      printMeta.textContent = 'Щитовая · ' + fmtDate(currentProject.updatedAt) + ' · ' + currentProject.markers.length + ' ' + markerWord(currentProject.markers.length);
+      printTitle.textContent = currentProject.name || t('project.untitled');
+      printMeta.textContent = t('brand.name') + ' · ' + fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + currentProject.markers.length;
       printImage.src = canvas.toDataURL('image/jpeg', 0.9);
 
       if(currentProject.markers.length === 0){
-        printMarkerList.innerHTML = '<p style="color:#666;font-size:13px;">Меток пока нет.</p>';
+        printMarkerList.innerHTML = '<p style="color:#666;font-size:13px;">' + escapeHtml(t('print.noMarkers')) + '</p>';
       }else{
         printMarkerList.innerHTML = currentProject.markers.map((m, i)=>{
           const color = m.type === 'wire' ? '#c97b4a' : m.type === 'note' ? '#4fb3a9' : '#f0a800';
@@ -1337,8 +1576,8 @@
           return `<div class="print-marker-row">
             <div class="print-marker-dot" style="background:${color}">${escapeHtml(num)}</div>
             <div>
-              <p class="print-marker-title">${escapeHtml(m.label || ('Метка ' + (i+1)))} <span class="print-marker-type">— ${typeLabelRu(m.type)}</span></p>
-              <p class="print-marker-desc">${escapeHtml(m.desc || 'Без описания')}</p>
+              <p class="print-marker-title">${escapeHtml(m.label || t('marker.defaultLabel', {n: i+1}))} <span class="print-marker-type">— ${typeLabel(m.type)}</span></p>
+              <p class="print-marker-desc">${escapeHtml(m.desc || t('popup.noDesc'))}</p>
             </div>
           </div>`;
         }).join('');
@@ -1346,25 +1585,26 @@
 
       setTimeout(()=>window.print(), 100);
     };
-    img.onerror = ()=>toast('Не удалось загрузить фото для сохранения в PDF');
+    img.onerror = ()=>toast(t('toast.pdfPhotoFailed'));
     img.src = currentProject.image;
   });
 
   /* ---------------- Init ---------------- */
   async function init(){
+    applyLanguage(detectInitialLang());
     clearTimeout(window.__sbWatchdog);
     if(typeof window.supabase !== 'undefined' && !supabaseConfigured()){
       projects = [];
       revealApp();
       showList();
-      toast('Впишите SUPABASE_URL и SUPABASE_ANON_KEY в код сайта, чтобы включить сохранение');
+      toast(t('toast.sbNotConfigured'));
       return;
     }
     if(!storageOk()){
       projects = [];
       revealApp();
       showList();
-      toast('Хранилище недоступно — проверьте подключение к Supabase');
+      toast(t('toast.storageUnavailable'));
       return;
     }
     try{
@@ -1383,7 +1623,7 @@
     if(!gridLoading.hidden){
       revealApp();
       showList();
-      toast('Не удалось связаться с хранилищем — работаем в режиме без сохранения');
+      toast(t('toast.storageUnavailable'));
     }
   }, 8000);
   // Show the shell immediately; render an empty list right away so the UI
