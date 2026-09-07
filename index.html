@@ -261,6 +261,13 @@
     pointer-events:none; opacity:0.9;
   }
   .stage-hint.hidden{display:none;}
+  .align-guide{
+    position:absolute; left:0; right:0; height:0;
+    border-top:1.5px dashed var(--amber);
+    pointer-events:none; z-index:22;
+    box-shadow:0 0 6px rgba(240,168,0,0.5);
+  }
+  .align-guide[hidden]{display:none;}
 
   .pin{
     position:absolute; transform:translate(-50%,-50%);
@@ -493,6 +500,7 @@
         <div class="image-stage" id="imageStage">
           <img id="stageImage" alt="Фото щита">
           <div class="stage-hint" id="stageHint">Нажмите на фото, чтобы поставить метку</div>
+          <div class="align-guide" id="alignGuide" hidden></div>
           <div class="marker-info-popup" id="markerInfoPopup" hidden>
             <button class="popup-close" id="popupClose" type="button">&times;</button>
             <div class="popup-dot" id="popupDot"></div>
@@ -636,6 +644,7 @@
   const imageStage = el('imageStage');
   const stageImage = el('stageImage');
   const stageHint = el('stageHint');
+  const alignGuide = el('alignGuide');
   const markerList = el('markerList');
   const markerCountLabel = el('markerCountLabel');
   const modeToggle = el('modeToggle');
@@ -1327,6 +1336,7 @@
   function startPinDrag(ev, pinEl, marker){
     const startX = ev.clientX, startY = ev.clientY;
     let moved = false;
+    const SNAP_Y = 1.4; // percent of image height — how close counts as "on the same line"
     try{ pinEl.setPointerCapture(ev.pointerId); }catch(e){}
 
     function onMove(e){
@@ -1339,6 +1349,22 @@
       let y = ((e.clientY - r.top) / r.height) * 100;
       x = Math.max(1, Math.min(99, x));
       y = Math.max(1, Math.min(99, y));
+
+      // Snap to the horizontal line of the leftmost nearby marker, if any.
+      const nearby = currentProject.markers.filter(mk => mk.id !== marker.id && Math.abs(mk.y - y) <= SNAP_Y);
+      if(nearby.length > 0){
+        const leftmost = nearby.reduce((a,b)=> a.x <= b.x ? a : b);
+        if(leftmost.x <= x){
+          y = leftmost.y;
+          alignGuide.style.top = y + '%';
+          alignGuide.hidden = false;
+        }else{
+          alignGuide.hidden = true;
+        }
+      }else{
+        alignGuide.hidden = true;
+      }
+
       pinEl.style.left = x + '%';
       pinEl.style.top = y + '%';
       pinEl.dataset.pendingX = x;
@@ -1349,6 +1375,7 @@
       pinEl.removeEventListener('pointerup', onUp);
       pinEl.removeEventListener('pointercancel', onCancel);
       pinEl.classList.remove('dragging');
+      alignGuide.hidden = true;
       if(moved){
         pinJustDragged = true;
         marker.x = parseFloat(pinEl.dataset.pendingX);
@@ -1362,6 +1389,7 @@
       pinEl.removeEventListener('pointerup', onUp);
       pinEl.removeEventListener('pointercancel', onCancel);
       pinEl.classList.remove('dragging');
+      alignGuide.hidden = true;
       renderPins(); // snap back to the saved position
     }
     pinEl.addEventListener('pointermove', onMove);
