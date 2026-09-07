@@ -375,6 +375,34 @@
   .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
 
   .top-scoped{max-width:1100px; margin:0 auto; width:100%;}
+
+  /* ---------- Print / Save as PDF ---------- */
+  #printArea{ display:none; }
+  @media print{
+    body *{ visibility:hidden; }
+    #printArea, #printArea *{ visibility:visible; }
+    #printArea{
+      display:block; position:absolute; left:0; top:0; width:100%;
+      background:#ffffff; color:#111111; padding:24px;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+    #printTitle{ font-size:20px; font-weight:700; margin:0 0 2px; }
+    #printMeta{ font-size:12px; color:#555555; margin:0 0 16px; }
+    #printImage{ max-width:100%; height:auto; display:block; margin:0 0 22px; border:1px solid #ddd; }
+    #printArea h2{ font-size:14px; margin:0 0 10px; }
+    .print-marker-row{
+      display:flex; gap:10px; padding:8px 0;
+      border-bottom:1px solid #e2e2e2; page-break-inside:avoid;
+    }
+    .print-marker-dot{
+      width:18px; height:18px; border-radius:50%; flex-shrink:0; margin-top:1px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:9px; font-weight:700; color:#14171c;
+    }
+    .print-marker-title{ font-size:13px; font-weight:700; margin:0; color:#111111; }
+    .print-marker-type{ font-size:11px; font-weight:400; color:#666666; }
+    .print-marker-desc{ font-size:12px; color:#333333; margin:3px 0 0; line-height:1.4; }
+  }
 </style>
 </head>
 <body>
@@ -401,7 +429,7 @@
     <button class="icon-btn" id="btnBack" hidden title="К проектам">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <button class="icon-btn" id="btnExport" hidden title="Экспорт со схемой">
+    <button class="icon-btn" id="btnExport" hidden title="Сохранить в PDF">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
     </button>
     <button class="icon-btn" id="btnDeleteProject" hidden title="Удалить проект">
@@ -545,6 +573,14 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div id="printArea">
+  <h1 id="printTitle"></h1>
+  <p id="printMeta"></p>
+  <img id="printImage" alt="Фото щита с метками">
+  <h2>Метки</h2>
+  <div id="printMarkerList"></div>
+</div>
 
 <script>
   // Watchdog: if the Supabase library fails to load (e.g. no network to the CDN),
@@ -1250,6 +1286,16 @@
   btnBack.addEventListener('click', showList);
 
   /* ---------------- Export ---------------- */
+  const printArea = el('printArea');
+  const printTitle = el('printTitle');
+  const printMeta = el('printMeta');
+  const printImage = el('printImage');
+  const printMarkerList = el('printMarkerList');
+
+  function typeLabelRu(type){
+    return type === 'wire' ? 'Провод' : type === 'note' ? 'Заметка' : 'Модуль';
+  }
+
   btnExport.addEventListener('click', ()=>{
     if(!currentProject) return;
     const img = new Image();
@@ -1277,12 +1323,30 @@
         const txt = m.label && m.label.length <= 4 ? m.label : String(i+1);
         ctx.fillText(txt, cx, cy+1);
       });
-      const link = document.createElement('a');
-      link.download = (currentProject.name || 'schitovaya').replace(/[^\wа-яА-ЯёЁ\- ]/g,'').trim() + '.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+
+      printTitle.textContent = currentProject.name || 'Щит';
+      printMeta.textContent = 'Щитовая · ' + fmtDate(currentProject.updatedAt) + ' · ' + currentProject.markers.length + ' ' + markerWord(currentProject.markers.length);
+      printImage.src = canvas.toDataURL('image/jpeg', 0.9);
+
+      if(currentProject.markers.length === 0){
+        printMarkerList.innerHTML = '<p style="color:#666;font-size:13px;">Меток пока нет.</p>';
+      }else{
+        printMarkerList.innerHTML = currentProject.markers.map((m, i)=>{
+          const color = m.type === 'wire' ? '#c97b4a' : m.type === 'note' ? '#4fb3a9' : '#f0a800';
+          const num = m.label && m.label.length <= 4 ? m.label : String(i+1);
+          return `<div class="print-marker-row">
+            <div class="print-marker-dot" style="background:${color}">${escapeHtml(num)}</div>
+            <div>
+              <p class="print-marker-title">${escapeHtml(m.label || ('Метка ' + (i+1)))} <span class="print-marker-type">— ${typeLabelRu(m.type)}</span></p>
+              <p class="print-marker-desc">${escapeHtml(m.desc || 'Без описания')}</p>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      setTimeout(()=>window.print(), 100);
     };
-    img.onerror = ()=>toast('Не удалось загрузить фото для экспорта');
+    img.onerror = ()=>toast('Не удалось загрузить фото для сохранения в PDF');
     img.src = currentProject.image;
   });
 
