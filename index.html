@@ -128,6 +128,14 @@
     display:flex; align-items:center; gap:4px;
   }
   .marker-count-chip svg{width:11px; height:11px;}
+  .photo-count-chip{
+    position:absolute; left:8px; bottom:8px;
+    background:rgba(20,23,28,0.85); border:1px solid var(--border);
+    color:var(--teal); font-size:11.5px; font-weight:600;
+    padding:3px 8px; border-radius:20px;
+    display:flex; align-items:center; gap:4px;
+  }
+  .photo-count-chip svg{width:11px; height:11px;}
   .project-info{padding:12px 14px 14px;}
   .project-name{font-size:14.5px; font-weight:600; margin:0 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .project-meta{font-size:12px; color:var(--text-faint);}
@@ -247,6 +255,37 @@
 
   .editor-body{display:flex; flex-direction:column; gap:16px;}
   @media(min-width:840px){ .editor-body{flex-direction:row; align-items:flex-start;} }
+
+  .photo-strip{
+    display:flex; gap:8px; overflow-x:auto; padding:2px 2px 12px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .photo-strip[hidden]{display:none;}
+  .photo-thumb{
+    position:relative; flex-shrink:0; width:64px; height:48px; border-radius:8px;
+    overflow:hidden; border:2px solid var(--border); background:var(--bg-elev);
+    padding:0; cursor:pointer;
+  }
+  .photo-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .photo-thumb.active{border-color:var(--amber);}
+  .photo-thumb .photo-thumb-count{
+    position:absolute; right:2px; bottom:2px; background:rgba(20,23,28,0.85);
+    color:var(--amber); font-size:9px; font-weight:600; padding:1px 4px; border-radius:8px;
+    font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  .photo-thumb-del{
+    position:absolute; top:1px; right:1px; width:16px; height:16px; border-radius:50%;
+    background:rgba(20,23,28,0.85); border:none; color:#e7e5e0;
+    display:flex; align-items:center; justify-content:center; font-size:11px; line-height:1;
+  }
+  .photo-thumb-del:hover{background:var(--danger);}
+  .photo-thumb-add{
+    flex-shrink:0; width:64px; height:48px; border-radius:8px;
+    border:1.5px dashed var(--border); background:transparent; color:var(--text-dim);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .photo-thumb-add:hover{border-color:var(--amber); color:var(--amber);}
+  .photo-thumb-add svg{width:16px; height:16px;}
 
   .image-stage{
     position:relative; width:100%;
@@ -496,6 +535,8 @@
           <span id="pinSizeValue" class="mono">13px</span>
         </div>
       </div>
+      <div class="photo-strip" id="photoStrip"></div>
+      <input type="file" id="addPhotoInput" accept="image/*" hidden>
       <div class="editor-body">
         <div class="image-stage" id="imageStage">
           <img id="stageImage" alt="Фото щита">
@@ -645,6 +686,8 @@
   const stageImage = el('stageImage');
   const stageHint = el('stageHint');
   const alignGuide = el('alignGuide');
+  const photoStrip = el('photoStrip');
+  const addPhotoInput = el('addPhotoInput');
   const markerList = el('markerList');
   const markerCountLabel = el('markerCountLabel');
   const modeToggle = el('modeToggle');
@@ -657,6 +700,11 @@
   const pinSizeRange = el('pinSizeRange');
   const pinSizeValue = el('pinSizeValue');
   let editorMode = 'edit';
+  let currentPhotoIndex = 0;
+  function activePhoto(){
+    if(!currentProject || !currentProject.photos || currentProject.photos.length === 0) return {markers:[], image:'', thumb:''};
+    return currentProject.photos[currentPhotoIndex] || currentProject.photos[0];
+  }
   let selectedMarkerId = null;
 
   /* ---------------- Pin size (saved per project, in Supabase) ---------------- */
@@ -730,7 +778,7 @@
       'toast.storageUnavailable':'Хранилище недоступно — проверьте подключение к Supabase','toast.sbNotConfigured':'Впишите SUPABASE_URL и SUPABASE_ANON_KEY в код сайта, чтобы включить сохранение',
       'toast.sbSaveFailed':'Не удалось сохранить в Supabase — проверьте связь','toast.pdfPhotoFailed':'Не удалось загрузить фото для сохранения в PDF',
       'toast.sbLibFailed':'Не удалось загрузить библиотеку Supabase. Проверьте интернет-соединение и перезагрузите страницу.',
-      'print.noMarkers':'Меток пока нет.','editor.subtitle':'Редактирование щита','project.untitled':'Без названия'
+      'print.noMarkers':'Меток пока нет.','editor.subtitle':'Редактирование щита','project.untitled':'Без названия','photo.add':'Добавить фото','confirm.deletePhoto.title':'Удалить фото?','confirm.deletePhoto.text':'Фото и все его метки будут удалены безвозвратно.'
     },
     uk:{
       'brand.name':'Щитова','app.tagline':'Маркування електрощитів','list.title':'Проєкти',
@@ -754,7 +802,7 @@
       'toast.storageUnavailable':'Сховище недоступне — перевірте підключення до Supabase','toast.sbNotConfigured':'Впишіть SUPABASE_URL і SUPABASE_ANON_KEY у код сайту, щоб увімкнути збереження',
       'toast.sbSaveFailed':'Не вдалося зберегти в Supabase — перевірте з’єднання','toast.pdfPhotoFailed':'Не вдалося завантажити фото для збереження в PDF',
       'toast.sbLibFailed':'Не вдалося завантажити бібліотеку Supabase. Перевірте інтернет-з’єднання і перезавантажте сторінку.',
-      'print.noMarkers':'Міток поки немає.','editor.subtitle':'Редагування щита','project.untitled':'Без назви'
+      'print.noMarkers':'Міток поки немає.','editor.subtitle':'Редагування щита','project.untitled':'Без назви','photo.add':'Додати фото','confirm.deletePhoto.title':'Видалити фото?','confirm.deletePhoto.text':'Фото і всі його мітки будуть видалені назавжди.'
     },
     en:{
       'brand.name':'PanelBoard','app.tagline':'Electrical panel labeling','list.title':'Projects',
@@ -778,7 +826,7 @@
       'toast.storageUnavailable':'Storage unavailable — check your Supabase connection','toast.sbNotConfigured':'Fill in SUPABASE_URL and SUPABASE_ANON_KEY in the site code to enable saving',
       'toast.sbSaveFailed':'Could not save to Supabase — check your connection','toast.pdfPhotoFailed':'Could not load the photo for the PDF',
       'toast.sbLibFailed':'Could not load the Supabase library. Check your internet connection and reload the page.',
-      'print.noMarkers':'No markers yet.','editor.subtitle':'Editing panel','project.untitled':'Untitled'
+      'print.noMarkers':'No markers yet.','editor.subtitle':'Editing panel','project.untitled':'Untitled','photo.add':'Add photo','confirm.deletePhoto.title':'Delete this photo?','confirm.deletePhoto.text':'The photo and all its markers will be permanently deleted.'
     },
     de:{
       'brand.name':'Verteiler','app.tagline':'Kennzeichnung von Elektroverteilern','list.title':'Projekte',
@@ -802,7 +850,7 @@
       'toast.storageUnavailable':'Speicher nicht verfügbar — Supabase-Verbindung prüfen','toast.sbNotConfigured':'SUPABASE_URL und SUPABASE_ANON_KEY im Code eintragen, um das Speichern zu aktivieren',
       'toast.sbSaveFailed':'Speichern in Supabase fehlgeschlagen — Verbindung prüfen','toast.pdfPhotoFailed':'Foto für das PDF konnte nicht geladen werden',
       'toast.sbLibFailed':'Supabase-Bibliothek konnte nicht geladen werden. Internetverbindung prüfen und Seite neu laden.',
-      'print.noMarkers':'Noch keine Markierungen.','editor.subtitle':'Verteiler bearbeiten','project.untitled':'Ohne Namen'
+      'print.noMarkers':'Noch keine Markierungen.','editor.subtitle':'Verteiler bearbeiten','project.untitled':'Ohne Namen','photo.add':'Foto hinzufügen','confirm.deletePhoto.title':'Foto löschen?','confirm.deletePhoto.text':'Das Foto und alle seine Markierungen werden endgültig gelöscht.'
     },
     es:{
       'brand.name':'Cuadro','app.tagline':'Etiquetado de cuadros eléctricos','list.title':'Proyectos',
@@ -826,7 +874,7 @@
       'toast.storageUnavailable':'Almacenamiento no disponible — comprueba la conexión con Supabase','toast.sbNotConfigured':'Escribe SUPABASE_URL y SUPABASE_ANON_KEY en el código del sitio para habilitar el guardado',
       'toast.sbSaveFailed':'No se pudo guardar en Supabase — comprueba tu conexión','toast.pdfPhotoFailed':'No se pudo cargar la foto para el PDF',
       'toast.sbLibFailed':'No se pudo cargar la librería de Supabase. Comprueba tu conexión a internet y recarga la página.',
-      'print.noMarkers':'Aún no hay marcadores.','editor.subtitle':'Editando cuadro','project.untitled':'Sin nombre'
+      'print.noMarkers':'Aún no hay marcadores.','editor.subtitle':'Editando cuadro','project.untitled':'Sin nombre','photo.add':'Añadir foto','confirm.deletePhoto.title':'¿Eliminar esta foto?','confirm.deletePhoto.text':'La foto y todos sus marcadores se eliminarán de forma permanente.'
     },
     pt:{
       'brand.name':'Quadro','app.tagline':'Marcação de quadros elétricos','list.title':'Projetos',
@@ -850,7 +898,7 @@
       'toast.storageUnavailable':'Armazenamento indisponível — verifique a ligação ao Supabase','toast.sbNotConfigured':'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no código do site para ativar o guardado',
       'toast.sbSaveFailed':'Não foi possível guardar no Supabase — verifique a ligação','toast.pdfPhotoFailed':'Não foi possível carregar a foto para o PDF',
       'toast.sbLibFailed':'Não foi possível carregar a biblioteca do Supabase. Verifique a ligação à internet e recarregue a página.',
-      'print.noMarkers':'Ainda não há marcadores.','editor.subtitle':'A editar o quadro','project.untitled':'Sem nome'
+      'print.noMarkers':'Ainda não há marcadores.','editor.subtitle':'A editar o quadro','project.untitled':'Sem nome','photo.add':'Adicionar foto','confirm.deletePhoto.title':'Eliminar esta foto?','confirm.deletePhoto.text':'A foto e todos os seus marcadores serão eliminados permanentemente.'
     },
     cs:{
       'brand.name':'Rozvaděč','app.tagline':'Značení elektrických rozvaděčů','list.title':'Projekty',
@@ -874,7 +922,7 @@
       'toast.storageUnavailable':'Úložiště nedostupné — zkontrolujte připojení k Supabase','toast.sbNotConfigured':'Vyplňte SUPABASE_URL a SUPABASE_ANON_KEY v kódu webu pro zapnutí ukládání',
       'toast.sbSaveFailed':'Uložení do Supabase se nezdařilo — zkontrolujte připojení','toast.pdfPhotoFailed':'Fotku pro PDF se nepodařilo načíst',
       'toast.sbLibFailed':'Knihovnu Supabase se nepodařilo načíst. Zkontrolujte internetové připojení a načtěte stránku znovu.',
-      'print.noMarkers':'Zatím žádné značky.','editor.subtitle':'Úprava rozvaděče','project.untitled':'Bez názvu'
+      'print.noMarkers':'Zatím žádné značky.','editor.subtitle':'Úprava rozvaděče','project.untitled':'Bez názvu','photo.add':'Přidat fotku','confirm.deletePhoto.title':'Smazat tuto fotku?','confirm.deletePhoto.text':'Fotka a všechny její značky budou trvale smazány.'
     },
     pl:{
       'brand.name':'Rozdzielnia','app.tagline':'Oznaczanie rozdzielnic elektrycznych','list.title':'Projekty',
@@ -898,7 +946,7 @@
       'toast.storageUnavailable':'Magazyn niedostępny — sprawdź połączenie z Supabase','toast.sbNotConfigured':'Wpisz SUPABASE_URL i SUPABASE_ANON_KEY w kodzie strony, aby włączyć zapisywanie',
       'toast.sbSaveFailed':'Nie udało się zapisać w Supabase — sprawdź połączenie','toast.pdfPhotoFailed':'Nie udało się wczytać zdjęcia do PDF',
       'toast.sbLibFailed':'Nie udało się wczytać biblioteki Supabase. Sprawdź połączenie z internetem i odśwież stronę.',
-      'print.noMarkers':'Brak znaczników.','editor.subtitle':'Edycja rozdzielnicy','project.untitled':'Bez nazwy'
+      'print.noMarkers':'Brak znaczników.','editor.subtitle':'Edycja rozdzielnicy','project.untitled':'Bez nazwy','photo.add':'Dodaj zdjęcie','confirm.deletePhoto.title':'Usunąć to zdjęcie?','confirm.deletePhoto.text':'Zdjęcie i wszystkie jego znaczniki zostaną trwale usunięte.'
     }
   };
   let currentLang = 'ru';
@@ -929,7 +977,7 @@
     if(currentProject && !viewEditor.hidden){
       updateStageHint();
       renderMarkerList();
-      editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + currentProject.markers.length;
+      editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + activePhoto().markers.length;
     }
     if(!viewList.hidden){ renderProjectGrid(); }
   }
@@ -977,21 +1025,27 @@
   const storageOk = ()=> !!getClient();
 
   function rowToProject(row){
+    let photos = Array.isArray(row.photos) ? row.photos : [];
+    if(photos.length === 0 && row.image_url){
+      // Legacy single-photo project — migrate into the new photos array shape.
+      photos = [{ id: row.id + '-legacy', image: row.image_url, thumb: row.thumb_url, markers: row.markers || [] }];
+    }
     return {
       id: row.id, name: row.name,
       createdAt: row.created_at, updatedAt: row.updated_at,
-      image: row.image_url, thumb: row.thumb_url,
-      markers: row.markers || [],
-      pinSize: row.pin_size || 13
+      pinSize: row.pin_size || 13,
+      photos: photos
     };
   }
   function projectToRow(p){
+    const cover = p.photos && p.photos[0];
     return {
       id: p.id, name: p.name,
       created_at: p.createdAt, updated_at: p.updatedAt,
-      image_url: p.image, thumb_url: p.thumb,
-      markers: p.markers || [],
-      pin_size: p.pinSize || 13
+      pin_size: p.pinSize || 13,
+      photos: p.photos || [],
+      thumb_url: cover ? cover.thumb : null,
+      image_url: cover ? cover.image : null
     };
   }
 
@@ -1000,13 +1054,19 @@
     if(!client) return [];
     try{
       const {data, error} = await client.from('projects')
-        .select('id,name,updated_at,thumb_url,markers')
+        .select('id,name,updated_at,thumb_url,photos,markers')
         .order('updated_at', {ascending:false});
       if(error) throw error;
-      return (data||[]).map(row=>({
-        id: row.id, name: row.name, updatedAt: row.updated_at,
-        thumb: row.thumb_url, markerCount: (row.markers||[]).length
-      }));
+      return (data||[]).map(row=>{
+        const photos = Array.isArray(row.photos) && row.photos.length ? row.photos : null;
+        const markerCount = photos
+          ? photos.reduce((sum, ph)=> sum + ((ph.markers||[]).length), 0)
+          : (row.markers || []).length;
+        return {
+          id: row.id, name: row.name, updatedAt: row.updated_at,
+          thumb: row.thumb_url, markerCount: markerCount, photoCount: photos ? photos.length : 1
+        };
+      });
     }catch(e){ return []; }
   }
   async function loadProject(id){
@@ -1027,13 +1087,20 @@
       return true;
     }catch(e){ toast(t('toast.sbSaveFailed')); return false; }
   }
-  async function deleteProjectStorage(id){
+  async function deleteProjectStorage(id, photos){
     const client = getClient();
     if(!client) return;
     try{
       await client.from('projects').delete().eq('id', id);
-      await client.storage.from(BUCKET).remove([id+'/full.jpg', id+'/thumb.jpg']);
+      let paths = (photos||[]).flatMap(ph => [id+'/'+ph.id+'/full.jpg', id+'/'+ph.id+'/thumb.jpg']);
+      if(paths.length === 0) paths = [id+'/full.jpg', id+'/thumb.jpg']; // legacy single-photo path
+      await client.storage.from(BUCKET).remove(paths);
     }catch(e){}
+  }
+  async function deletePhotoStorage(projectId, photoId){
+    const client = getClient();
+    if(!client) return;
+    try{ await client.storage.from(BUCKET).remove([projectId+'/'+photoId+'/full.jpg', projectId+'/'+photoId+'/thumb.jpg']); }catch(e){}
   }
   async function uploadImage(dataUrl, path){
     const client = getClient();
@@ -1084,6 +1151,7 @@
 
   function showEditor(project){
     currentProject = project;
+    currentPhotoIndex = 0;
     viewList.hidden = true;
     viewEditor.hidden = false;
     btnBack.hidden = false;
@@ -1092,13 +1160,93 @@
     fab.hidden = true;
     brandSub.textContent = t('editor.subtitle');
     projectNameInput.value = project.name;
-    stageImage.src = project.image;
-    editorSub.textContent = fmtDate(project.updatedAt) + ' · ' + t('markers.heading') + ': ' + project.markers.length;
     applyPinSize(project.pinSize || 13);
+    renderPhotoStrip();
+    loadActivePhoto();
+  }
+
+  function loadActivePhoto(){
+    stageImage.src = activePhoto().image;
+    editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + activePhoto().markers.length;
     setMode('edit');
     renderPins();
     renderMarkerList();
+    renderPhotoStrip();
   }
+
+  function renderPhotoStrip(){
+    photoStrip.innerHTML = '';
+    photoStrip.hidden = currentProject.photos.length <= 1;
+    currentProject.photos.forEach((ph, i)=>{
+      const thumb = document.createElement('button');
+      thumb.type = 'button';
+      thumb.className = 'photo-thumb' + (i === currentPhotoIndex ? ' active' : '');
+      const count = (ph.markers||[]).length;
+      thumb.innerHTML = `<img src="${ph.thumb || ph.image}" alt="">` + (count > 0 ? `<span class="photo-thumb-count">${count}</span>` : '');
+      if(currentProject.photos.length > 1){
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'photo-thumb-del';
+        delBtn.innerHTML = '&times;';
+        delBtn.addEventListener('click', (ev)=>{
+          ev.stopPropagation();
+          askConfirm(t('confirm.deletePhoto.title'), t('confirm.deletePhoto.text'), async ()=>{
+            const removedPhotoId = ph.id;
+            currentProject.photos.splice(i, 1);
+            if(currentPhotoIndex >= currentProject.photos.length) currentPhotoIndex = currentProject.photos.length - 1;
+            currentProject.updatedAt = Date.now();
+            loadActivePhoto();
+            await persistCurrentAndSummary();
+            await deletePhotoStorage(currentProject.id, removedPhotoId);
+          });
+        });
+        thumb.appendChild(delBtn);
+      }
+      thumb.addEventListener('click', ()=>{
+        if(i === currentPhotoIndex) return;
+        currentPhotoIndex = i;
+        loadActivePhoto();
+      });
+      photoStrip.appendChild(thumb);
+    });
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'photo-thumb-add';
+    addBtn.title = t('photo.add');
+    addBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>`;
+    addBtn.addEventListener('click', ()=>addPhotoInput.click());
+    photoStrip.appendChild(addBtn);
+    photoStrip.hidden = false;
+  }
+
+  addPhotoInput.addEventListener('change', async ()=>{
+    const file = addPhotoInput.files[0];
+    addPhotoInput.value = '';
+    if(!file || !currentProject) return;
+    toast(t('upload.processing'));
+    let full, thumb;
+    try{
+      [full, thumb] = await Promise.all([
+        resizeImage(file, 1100, 0.68),
+        resizeImage(file, 220, 0.6)
+      ]);
+    }catch(e){ toast(t('upload.error')); return; }
+
+    const photoId = uid();
+    let fullUrl, thumbUrl;
+    try{
+      [fullUrl, thumbUrl] = await Promise.all([
+        uploadImage(full, currentProject.id+'/'+photoId+'/full.jpg'),
+        uploadImage(thumb, currentProject.id+'/'+photoId+'/thumb.jpg')
+      ]);
+    }catch(e){ toast(t('toast.uploadFailed')); return; }
+
+    currentProject.photos.push({ id: photoId, image: fullUrl, thumb: thumbUrl, markers: [] });
+    currentProject.updatedAt = Date.now();
+    currentPhotoIndex = currentProject.photos.length - 1;
+    loadActivePhoto();
+    await persistCurrentAndSummary();
+  });
 
   function setMode(newMode){
     editorMode = newMode;
@@ -1112,7 +1260,7 @@
 
   function updateStageHint(){
     if(!currentProject) return;
-    if(currentProject.markers.length > 0){
+    if(activePhoto().markers.length > 0){
       stageHint.classList.add('hidden');
       return;
     }
@@ -1167,6 +1315,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"/></svg>
             ${p.markerCount}
           </div>
+          ${p.photoCount > 1 ? `<div class="photo-count-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M7 20h10a2 2 0 0 0 2-2V6"/></svg>
+            ${p.photoCount}
+          </div>` : ''}
         </div>
         <div class="project-info">
           <p class="project-name">${escapeHtml(p.name)}</p>
@@ -1233,6 +1385,7 @@
     const name = newProjectName.value.trim() || t('project.untitled');
     const now = Date.now();
     const id = uid();
+    const photoId = uid();
 
     btnCreateProject.disabled = true;
     btnCreateProject.textContent = t('btn.uploadingPhoto');
@@ -1240,8 +1393,8 @@
     let fullUrl, thumbUrl;
     try{
       [fullUrl, thumbUrl] = await Promise.all([
-        uploadImage(pendingImageFull, id+'/full.jpg'),
-        uploadImage(pendingImageThumb, id+'/thumb.jpg')
+        uploadImage(pendingImageFull, id+'/'+photoId+'/full.jpg'),
+        uploadImage(pendingImageThumb, id+'/'+photoId+'/thumb.jpg')
       ]);
     }catch(e){
       btnCreateProject.disabled = false;
@@ -1251,9 +1404,8 @@
     }
 
     const full = {
-      id, name, createdAt: now, updatedAt: now,
-      image: fullUrl, thumb: thumbUrl,
-      markers: [], pinSize: 13
+      id, name, createdAt: now, updatedAt: now, pinSize: 13,
+      photos: [{ id: photoId, image: fullUrl, thumb: thumbUrl, markers: [] }]
     };
     btnCreateProject.textContent = t('btn.saving');
     currentProject = full;
@@ -1268,7 +1420,7 @@
       return;
     }
 
-    const summary = { id, name, updatedAt: now, thumb: thumbUrl, markerCount: 0 };
+    const summary = { id, name, updatedAt: now, thumb: thumbUrl, markerCount: 0, photoCount: 1 };
     projects.push(summary);
     btnCreateProject.disabled = false;
     btnCreateProject.textContent = t('btn.create');
@@ -1299,9 +1451,11 @@
     if(idx > -1){
       projects[idx].name = currentProject.name;
       projects[idx].updatedAt = currentProject.updatedAt;
-      projects[idx].markerCount = currentProject.markers.length;
+      projects[idx].markerCount = currentProject.photos.reduce((sum, ph)=> sum + (ph.markers||[]).length, 0);
+      projects[idx].photoCount = currentProject.photos.length;
+      projects[idx].thumb = currentProject.photos[0] ? currentProject.photos[0].thumb : projects[idx].thumb;
     }
-    editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + currentProject.markers.length;
+    editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + activePhoto().markers.length;
   }
 
   /* ---------------- Pins & markers ---------------- */
@@ -1310,7 +1464,7 @@
   function renderPins(){
     const existing = imageStage.querySelectorAll('.pin:not(.draft)');
     existing.forEach(p=>p.remove());
-    currentProject.markers.forEach((m, i)=>{
+    activePhoto().markers.forEach((m, i)=>{
       const pin = document.createElement('div');
       pin.className = 'pin type-' + m.type + (m.id === selectedMarkerId ? ' selected' : '');
       pin.dataset.markerId = m.id;
@@ -1351,7 +1505,7 @@
       y = Math.max(1, Math.min(99, y));
 
       // Snap to the horizontal line of the leftmost nearby marker, if any.
-      const nearby = currentProject.markers.filter(mk => mk.id !== marker.id && Math.abs(mk.y - y) <= SNAP_Y);
+      const nearby = activePhoto().markers.filter(mk => mk.id !== marker.id && Math.abs(mk.y - y) <= SNAP_Y);
       if(nearby.length > 0){
         const leftmost = nearby.reduce((a,b)=> a.x <= b.x ? a : b);
         if(leftmost.x <= x){
@@ -1404,13 +1558,13 @@
   }
 
   function renderMarkerList(){
-    markerCountLabel.textContent = currentProject.markers.length ? `(${currentProject.markers.length})` : '';
-    if(currentProject.markers.length === 0){
+    markerCountLabel.textContent = activePhoto().markers.length ? `(${activePhoto().markers.length})` : '';
+    if(activePhoto().markers.length === 0){
       markerList.innerHTML = '<p class="marker-panel-empty">' + escapeHtml(t('markers.emptyPanel')) + '</p>';
       return;
     }
     markerList.innerHTML = '';
-    currentProject.markers.forEach((m, i)=>{
+    activePhoto().markers.forEach((m, i)=>{
       const row = document.createElement('div');
       row.className = 'marker-row';
       row.style.cursor = 'pointer';
@@ -1463,7 +1617,7 @@
   function openMarkerModal(markerId){
     editingMarkerId = markerId;
     if(markerId){
-      const m = currentProject.markers.find(mm=>mm.id === markerId);
+      const m = activePhoto().markers.find(mm=>mm.id === markerId);
       markerModalTitle.textContent = t('marker.modal.editTitle');
       markerLabel.value = m.label || '';
       markerDesc.value = m.desc || '';
@@ -1493,10 +1647,10 @@
     const desc = markerDesc.value.trim();
     if(!label && !desc){ toast(t('toast.markerNeedsContent')); return; }
     if(editingMarkerId){
-      const m = currentProject.markers.find(mm=>mm.id === editingMarkerId);
+      const m = activePhoto().markers.find(mm=>mm.id === editingMarkerId);
       m.label = label; m.desc = desc; m.type = selectedType;
     }else{
-      currentProject.markers.push({
+      activePhoto().markers.push({
         id: uid(), x: pendingMarkerCoords.x, y: pendingMarkerCoords.y,
         label, desc, type: selectedType
       });
@@ -1514,7 +1668,7 @@
 
   btnDeleteMarker.addEventListener('click', ()=>{
     askConfirm(t('confirm.deleteMarker.title'), t('confirm.deleteMarker.text'), async ()=>{
-      currentProject.markers = currentProject.markers.filter(mm=>mm.id !== editingMarkerId);
+      activePhoto().markers = activePhoto().markers.filter(mm=>mm.id !== editingMarkerId);
       currentProject.updatedAt = Date.now();
       closeMarkerModal();
       renderPins();
@@ -1529,7 +1683,7 @@
     askConfirm(t('confirm.deleteProject.title'), t('confirm.deleteProject.text', {name: currentProject.name}), async ()=>{
       const id = currentProject.id;
       projects = projects.filter(p=>p.id !== id);
-      await deleteProjectStorage(id);
+      await deleteProjectStorage(id, currentProject.photos);
       showList();
       toast(t('toast.projectDeleted'));
     });
@@ -1573,7 +1727,7 @@
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       const r = Math.max(14, Math.round(img.width * 0.014));
-      currentProject.markers.forEach((m, i)=>{
+      activePhoto().markers.forEach((m, i)=>{
         const cx = img.width * m.x/100, cy = img.height * m.y/100;
         const color = m.type === 'wire' ? '#c97b4a' : m.type === 'note' ? '#4fb3a9' : '#f0a800';
         ctx.beginPath();
@@ -1592,13 +1746,13 @@
       });
 
       printTitle.textContent = currentProject.name || t('project.untitled');
-      printMeta.textContent = t('brand.name') + ' · ' + fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + currentProject.markers.length;
+      printMeta.textContent = t('brand.name') + ' · ' + fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + activePhoto().markers.length;
       printImage.src = canvas.toDataURL('image/jpeg', 0.9);
 
-      if(currentProject.markers.length === 0){
+      if(activePhoto().markers.length === 0){
         printMarkerList.innerHTML = '<p style="color:#666;font-size:13px;">' + escapeHtml(t('print.noMarkers')) + '</p>';
       }else{
-        printMarkerList.innerHTML = currentProject.markers.map((m, i)=>{
+        printMarkerList.innerHTML = activePhoto().markers.map((m, i)=>{
           const color = m.type === 'wire' ? '#c97b4a' : m.type === 'note' ? '#4fb3a9' : '#f0a800';
           const num = m.label && m.label.length <= 4 ? m.label : String(i+1);
           return `<div class="print-marker-row">
@@ -1614,7 +1768,7 @@
       setTimeout(()=>window.print(), 100);
     };
     img.onerror = ()=>toast(t('toast.pdfPhotoFailed'));
-    img.src = currentProject.image;
+    img.src = activePhoto().image;
   });
 
   /* ---------------- Init ---------------- */
