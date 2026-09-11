@@ -219,6 +219,7 @@
     padding:6px 12px; color:var(--text-dim); flex-shrink:0;
   }
   .size-control svg{width:14px; height:14px; flex-shrink:0;}
+  .floorplan-section .size-control{margin-bottom:10px;}
   .size-control input[type="range"]{
     width:80px; accent-color:var(--amber); cursor:pointer;
   }
@@ -343,6 +344,155 @@
   .marker-panel h2{font-size:13px; margin:0 0 10px; color:var(--text-dim); font-weight:600;}
   .marker-panel-empty{font-size:12.5px; color:var(--text-faint); line-height:1.5; padding:6px 2px;}
 
+  /* ---------- Materials table ---------- */
+  .materials-section{margin-top:18px;}
+  .section-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .section-head h2{margin:0;}
+  .section-remove{
+    width:26px; height:26px; border-radius:7px; background:transparent; border:1px solid var(--border);
+    color:var(--text-faint); font-size:16px; line-height:1; display:flex; align-items:center; justify-content:center;
+  }
+  .section-remove:hover{color:var(--danger); border-color:var(--danger); background:var(--danger-soft);}
+
+  .add-block-row{display:flex; justify-content:center; margin-top:24px;}
+  .add-block-row[hidden]{display:none;}
+  .add-block-btn{
+    width:48px; height:48px; border-radius:50%;
+    background:var(--bg-elev); border:1.5px dashed var(--border); color:var(--text-dim);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .add-block-btn svg{width:20px; height:20px;}
+  .add-block-btn:hover{border-color:var(--amber); color:var(--amber); border-style:solid;}
+
+  .block-choice-list{display:flex; flex-direction:column; gap:10px; margin-bottom:4px;}
+  .block-choice-btn{
+    display:flex; align-items:center; gap:12px; text-align:left;
+    background:var(--bg); border:1px solid var(--border); border-radius:10px;
+    padding:12px 14px; color:var(--text);
+  }
+  .block-choice-btn:hover{border-color:var(--amber);}
+  .block-choice-btn svg{width:22px; height:22px; flex-shrink:0; color:var(--amber);}
+  .block-choice-title{display:block; font-size:14px; font-weight:600;}
+  .block-choice-desc{display:block; font-size:12px; color:var(--text-dim); margin-top:2px;}
+  .materials-section h2{font-size:13px; margin:0 0 10px; color:var(--text-dim); font-weight:600;}
+  .materials-table{
+    background:var(--bg-elev); border:1px solid var(--border); border-radius:var(--radius-card);
+    overflow:hidden;
+  }
+  .materials-row{
+    display:grid; grid-template-columns:1fr 56px 72px 84px 28px;
+    gap:8px; align-items:center; padding:8px 10px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .materials-row:last-child{border-bottom:none;}
+  .materials-row-head{
+    color:var(--text-faint); font-size:10.5px; text-transform:uppercase; letter-spacing:0.03em;
+    padding-bottom:6px;
+  }
+  .materials-row input{
+    width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
+    border-radius:6px; padding:6px 7px; font-size:12.5px; min-width:0;
+  }
+  .materials-row input:focus{outline:none; border-color:var(--text-faint);}
+  .materials-row input[type="number"]{text-align:right; -moz-appearance:textfield;}
+  .materials-row input[type="number"]::-webkit-outer-spin-button,
+  .materials-row input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance:none; margin:0;
+  }
+  .materials-row-sum{
+    font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size:12.5px; text-align:right; color:var(--amber); font-weight:600;
+  }
+  .materials-row-del{
+    width:22px; height:22px; border-radius:6px; background:transparent; border:none;
+    color:var(--text-faint); display:flex; align-items:center; justify-content:center;
+  }
+  .materials-row-del:hover{color:var(--danger); background:var(--danger-soft);}
+  .materials-empty{font-size:12.5px; color:var(--text-faint); padding:14px 12px; text-align:center;}
+  .materials-empty.hidden{display:none;}
+  .materials-footer{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-top:12px; flex-wrap:wrap;
+  }
+  .materials-total{font-size:13.5px; color:var(--text-dim);}
+  .materials-total span.mono{color:var(--amber); font-weight:600; font-size:15px;}
+  @media(max-width:480px){
+    .materials-row{grid-template-columns:1fr 46px 60px 66px 24px; gap:5px; padding:7px 6px;}
+    .materials-row input{padding:5px 4px; font-size:11.5px;}
+    .materials-row-sum{font-size:11.5px;}
+  }
+
+  /* ---------- Floor plan ---------- */
+  .floorplan-section{margin-top:22px;}
+  .floorplan-section h2{font-size:13px; margin:0 0 10px; color:var(--text-dim); font-weight:600;}
+  .fp-toolbar{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .fp-mode-toggle{
+    display:flex; gap:2px; background:var(--bg-elev); border:1px solid var(--border);
+    border-radius:20px; padding:3px; flex-wrap:wrap;
+  }
+  .fp-mode-btn{
+    background:transparent; border:none; color:var(--text-dim);
+    font-size:12px; font-weight:500; padding:7px 14px; border-radius:16px; white-space:nowrap;
+  }
+  .fp-mode-btn.active{background:var(--bg-elev-2); color:var(--amber);}
+  .fp-actions{display:flex; gap:8px; flex-wrap:wrap;}
+  .fp-action-btn{font-size:12px; padding:7px 12px;}
+  @media(max-width:420px){
+    .fp-mode-btn{font-size:11px; padding:6px 9px;}
+  }
+  .fp-hint{font-size:12px; color:var(--text-faint); margin:0 0 10px; line-height:1.5;}
+
+  .symbol-palette{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(86px, 1fr));
+    gap:8px; padding:4px 2px 10px;
+  }
+  .symbol-palette[hidden]{display:none;}
+  .symbol-btn{
+    min-width:0; display:flex; flex-direction:column; align-items:center; gap:5px;
+    background:var(--bg-elev); border:1.5px solid var(--border); border-radius:8px;
+    padding:9px 5px; color:var(--text-dim);
+  }
+  .symbol-btn svg{width:24px; height:24px; flex-shrink:0;}
+  .symbol-btn svg path, .symbol-btn svg line, .symbol-btn svg rect,
+  .symbol-btn svg circle:not(.dot){
+    stroke:currentColor; stroke-width:0.35; fill:none; vector-effect:non-scaling-stroke;
+  }
+  .symbol-btn svg circle.dot, .symbol-btn svg path.dot-line{fill:currentColor; stroke:none;}
+  .symbol-btn span{
+    font-size:9.5px; line-height:1.25; text-align:center; width:100%;
+    word-break:break-word; overflow-wrap:anywhere; hyphens:auto;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .symbol-btn.active{border-color:var(--amber); color:var(--amber); background:var(--amber-soft);}
+
+  .fp-canvas-wrap{
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 20px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 20px),
+      var(--bg-elev);
+    border:1px solid var(--border); border-radius:var(--radius-card);
+    overflow:hidden;
+  }
+  #floorplanSvg{width:100%; height:auto; display:block; aspect-ratio:4/3; touch-action:none; cursor:crosshair;}
+  .fp-wall{fill:none; stroke:var(--text); stroke-width:0.6; stroke-linejoin:round; stroke-linecap:round;}
+  .fp-wall-preview{fill:none; stroke:var(--amber); stroke-width:0.5; stroke-dasharray:1.5 1; opacity:0.8;}
+  .fp-vertex{fill:var(--amber); stroke:var(--bg); stroke-width:0.3;}
+  .fp-vertex-start{fill:var(--teal);}
+  .fp-symbol{cursor:grab;}
+  .fp-symbol.dragging{cursor:grabbing;}
+  .fp-symbol circle.sym-bg{fill:var(--bg-elev-2); stroke:var(--amber); stroke-width:0.4;}
+  .fp-symbol path, .fp-symbol line, .fp-symbol circle:not(.sym-bg){stroke:var(--text); fill:none; stroke-width:0.35;}
+  .fp-symbol text{font-size:2px; fill:var(--text); font-family:ui-sans-serif,sans-serif;}
+  .fp-dim-line{stroke:var(--teal); stroke-width:0.3;}
+  .fp-dim-tick{stroke:var(--teal); stroke-width:0.3;}
+  .fp-dim-label-bg{fill:var(--bg); stroke:var(--teal); stroke-width:0.15;}
+  .fp-dim-label{font-size:1.68px; fill:var(--teal); font-family:ui-sans-serif,sans-serif; font-weight:600; text-anchor:middle; dominant-baseline:middle;}
+  .fp-dim-hit{stroke:transparent; stroke-width:2.5; cursor:pointer;}
+  .fp-dim-draft-point{fill:var(--teal); stroke:var(--bg); stroke-width:0.3;}
+  .fp-dim-handle{fill:var(--teal); stroke:var(--bg); stroke-width:0.3; opacity:0; pointer-events:none;}
+  #floorplanSvg.fp-mode-dim .fp-dim-handle{opacity:1; pointer-events:auto; cursor:grab; touch-action:none;}
+  #floorplanSvg.fp-mode-dim .fp-dim-hit{cursor:grab; touch-action:none;}
+
   .marker-row{
     display:flex; gap:10px; align-items:flex-start;
     padding:9px 6px; border-radius:8px; border-bottom:1px solid var(--border-soft);
@@ -456,6 +606,42 @@
     .print-marker-title{ font-size:13px; font-weight:700; margin:0; color:#111111; }
     .print-marker-type{ font-size:11px; font-weight:400; color:#666666; }
     .print-marker-desc{ font-size:12px; color:#333333; margin:3px 0 0; line-height:1.4; }
+    #printMaterialsSection{ margin-top:20px; }
+    #printMaterialsTable{ width:100%; border-collapse:collapse; font-size:12px; }
+    #printMaterialsTable th{
+      text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.03em;
+      color:#555555; border-bottom:1px solid #999999; padding:5px 6px;
+    }
+    #printMaterialsTable td{ padding:6px; border-bottom:1px solid #e2e2e2; }
+    #printMaterialsTable td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+    #printMaterialsTable tfoot td{ font-weight:700; border-top:1.5px solid #333333; border-bottom:none; }
+    #printFloorplanSection{ margin-top:20px; page-break-inside:avoid; }
+    #printFloorplanSvgWrap{ border:1px solid #ccc; padding:8px; background:#fff; }
+    #printFloorplanSvgWrap svg{ width:100%; height:auto; display:block; }
+    #printFloorplanSvgWrap .fp-wall{ stroke:#111111 !important; }
+    #printFloorplanSvgWrap .sym-bg{ fill:#ffffff !important; stroke:#111111 !important; }
+    #printFloorplanSvgWrap .fp-dim-line, #printFloorplanSvgWrap .fp-dim-tick{ stroke:#0a6e63 !important; }
+    #printFloorplanSvgWrap .fp-dim-label-bg{ fill:#ffffff !important; stroke:#0a6e63 !important; }
+    #printFloorplanSvgWrap .fp-dim-label{ fill:#0a6e63 !important; }
+    #printFloorplanSvgWrap .fp-symbol path, #printFloorplanSvgWrap .fp-symbol circle, #printFloorplanSvgWrap .fp-symbol rect{
+      stroke:#111111 !important;
+    }
+    #printFloorplanLegend{
+      display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:10px; font-size:11px; color:#333333;
+    }
+    #printFloorplanLegend .legend-item{ display:flex; align-items:center; gap:5px; }
+    #printFloorplanLegend .legend-swatch{ width:14px; height:14px; flex-shrink:0; }
+    #printFloorplanLegend .legend-swatch svg{ width:100%; height:100%; }
+    #printFloorplanLegend .legend-swatch svg path,
+    #printFloorplanLegend .legend-swatch svg line,
+    #printFloorplanLegend .legend-swatch svg rect,
+    #printFloorplanLegend .legend-swatch svg circle:not(.dot){
+      stroke:#111111; fill:none; stroke-width:0.35;
+    }
+    #printFloorplanLegend .legend-swatch svg circle.dot,
+    #printFloorplanLegend .legend-swatch svg path.dot-line{
+      fill:#111111; stroke:none;
+    }
   }
 </style>
 </head>
@@ -556,6 +742,70 @@
           <div id="markerList"></div>
         </aside>
       </div>
+
+      <div class="materials-section" id="materialsSection" hidden>
+        <div class="section-head">
+          <h2 data-i18n="materials.heading">Материалы</h2>
+          <button type="button" class="section-remove" id="btnRemoveMaterials" data-i18n-title="block.remove" title="Убрать блок">&times;</button>
+        </div>
+        <div class="materials-table" id="materialsTable">
+          <div class="materials-row materials-row-head">
+            <span data-i18n="materials.col.name">Наименование</span>
+            <span data-i18n="materials.col.qty">Кол-во</span>
+            <span data-i18n="materials.col.price">Цена</span>
+            <span data-i18n="materials.col.sum">Сумма</span>
+            <span></span>
+          </div>
+          <div id="materialsRows"></div>
+          <p class="materials-empty" id="materialsEmpty" data-i18n="materials.empty">Список пуст. Добавьте первую позицию.</p>
+        </div>
+        <div class="materials-footer">
+          <button class="ghost-btn" id="btnAddMaterial" data-i18n="materials.addRow">+ Добавить позицию</button>
+          <div class="materials-total">
+            <span data-i18n="materials.total">Итого</span>: <span id="materialsTotalValue" class="mono">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="floorplan-section" id="floorplanSection" hidden>
+        <div class="section-head">
+          <h2 data-i18n="fp.heading">План помещения</h2>
+          <button type="button" class="section-remove" id="btnRemoveFloorplan" data-i18n-title="block.remove" title="Убрать блок">&times;</button>
+        </div>
+        <div class="fp-toolbar">
+          <div class="fp-mode-toggle">
+            <button type="button" class="fp-mode-btn active" id="fpModeWall" data-i18n="fp.mode.walls">Стены</button>
+            <button type="button" class="fp-mode-btn" id="fpModeSymbol" data-i18n="fp.mode.symbols">Обозначения</button>
+            <button type="button" class="fp-mode-btn" id="fpModeDim" data-i18n="fp.mode.dimensions">Размеры</button>
+          </div>
+          <div class="fp-actions">
+            <button type="button" class="ghost-btn fp-action-btn" id="fpUndo" data-i18n="fp.undo">Отменить точку</button>
+            <button type="button" class="ghost-btn fp-action-btn" id="fpFinish" data-i18n="fp.finish">Завершить контур</button>
+            <button type="button" class="danger-btn fp-action-btn" id="fpClear" data-i18n="fp.clear">Очистить всё</button>
+          </div>
+        </div>
+        <div class="size-control" data-i18n-title="fp.symbolSize.title" title="Размер значков обозначений">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/></svg>
+          <input type="range" id="symbolSizeRange" min="30" max="150" step="1" value="100">
+          <span id="symbolSizeValue" class="mono">100%</span>
+        </div>
+        <div class="size-control" data-i18n-title="fp.dimSize.title" title="Размер ячеек размеров">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="9" width="16" height="6" rx="1.5"/><path d="M4 6v3M20 6v3M4 15v3M20 15v3"/></svg>
+          <input type="range" id="dimSizeRange" min="30" max="150" step="1" value="100">
+          <span id="dimSizeValue" class="mono">100%</span>
+        </div>
+        <div class="symbol-palette" id="symbolPalette" hidden></div>
+        <p class="fp-hint" id="fpHint" data-i18n="fp.hint.walls">Нажимайте по очереди на углы комнаты — линии соединятся автоматически. Чтобы замкнуть контур, нажмите рядом с первой точкой.</p>
+        <div class="fp-canvas-wrap">
+          <svg id="floorplanSvg" viewBox="0 0 100 75" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+      </div>
+
+      <div class="add-block-row" id="addBlockRow">
+        <button type="button" class="add-block-btn" id="btnAddBlock" data-i18n-title="block.add" title="Добавить блок">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
     </div>
   </main>
 
@@ -588,6 +838,32 @@
   </div>
 </div>
 
+<!-- ADD BLOCK MODAL -->
+<div class="modal-overlay" id="modalAddBlock" hidden>
+  <div class="modal-card">
+    <h3 data-i18n="block.pickTitle">Добавить блок</h3>
+    <div class="block-choice-list">
+      <button type="button" class="block-choice-btn" id="choiceAddMaterials">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>
+        <span>
+          <span class="block-choice-title" data-i18n="materials.heading">Материалы</span>
+          <span class="block-choice-desc" data-i18n="block.materials.desc">Список товаров с ценами и суммой</span>
+        </span>
+      </button>
+      <button type="button" class="block-choice-btn" id="choiceAddFloorplan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.4" fill="currentColor" stroke="none"/><path d="M9 9h7v7"/></svg>
+        <span>
+          <span class="block-choice-title" data-i18n="fp.heading">План помещения</span>
+          <span class="block-choice-desc" data-i18n="block.floorplan.desc">Стены и условные обозначения</span>
+        </span>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost-btn" id="btnCancelAddBlock" data-i18n="btn.cancel">Отмена</button>
+    </div>
+  </div>
+</div>
+
 <!-- MARKER MODAL -->
 <div class="modal-overlay" id="modalMarker" hidden>
   <div class="modal-card">
@@ -616,6 +892,38 @@
   </div>
 </div>
 
+<!-- SYMBOL MODAL -->
+<div class="modal-overlay" id="modalSymbol" hidden>
+  <div class="modal-card">
+    <h3 id="symbolModalTitle"></h3>
+    <div class="field">
+      <label data-i18n="fp.symbol.noteLabel">Заметка (необязательно)</label>
+      <input type="text" id="symbolNoteInput" maxlength="60">
+    </div>
+    <div class="modal-actions">
+      <button class="danger-btn" id="btnDeleteSymbol" data-i18n="btn.delete">Удалить</button>
+      <button class="ghost-btn" id="btnCancelSymbol" data-i18n="btn.cancel">Отмена</button>
+      <button class="primary-btn" id="btnSaveSymbol" data-i18n="btn.save">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIMENSION MODAL -->
+<div class="modal-overlay" id="modalDimension" hidden>
+  <div class="modal-card">
+    <h3 data-i18n="fp.dim.modalTitle">Размер</h3>
+    <div class="field">
+      <label data-i18n="fp.dim.label">Значение</label>
+      <input type="text" id="dimLabelInput" data-i18n-placeholder="fp.dim.placeholder" placeholder="Например: 3,2 м" maxlength="20">
+    </div>
+    <div class="modal-actions">
+      <button class="danger-btn" id="btnDeleteDim" hidden data-i18n="btn.delete">Удалить</button>
+      <button class="ghost-btn" id="btnCancelDim" data-i18n="btn.cancel">Отмена</button>
+      <button class="primary-btn" id="btnSaveDim" data-i18n="btn.save">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="modalConfirm" hidden>
   <div class="modal-card">
@@ -638,6 +946,15 @@
   <img id="printImage" alt="Фото щита с метками">
   <h2 data-i18n="markers.heading">Метки</h2>
   <div id="printMarkerList"></div>
+  <div id="printMaterialsSection">
+    <h2 data-i18n="materials.heading">Материалы</h2>
+    <table id="printMaterialsTable"></table>
+  </div>
+  <div id="printFloorplanSection">
+    <h2 data-i18n="fp.heading">План помещения</h2>
+    <div id="printFloorplanSvgWrap"></div>
+    <div id="printFloorplanLegend"></div>
+  </div>
 </div>
 
 <script>
@@ -688,6 +1005,28 @@
   const alignGuide = el('alignGuide');
   const photoStrip = el('photoStrip');
   const addPhotoInput = el('addPhotoInput');
+  const materialsRows = el('materialsRows');
+  const materialsEmpty = el('materialsEmpty');
+  const materialsTotalValue = el('materialsTotalValue');
+  const btnAddMaterial = el('btnAddMaterial');
+  const materialsSection = el('materialsSection');
+  const floorplanSection = el('floorplanSection');
+  const btnRemoveMaterials = el('btnRemoveMaterials');
+  const btnRemoveFloorplan = el('btnRemoveFloorplan');
+  const addBlockRow = el('addBlockRow');
+  const btnAddBlock = el('btnAddBlock');
+  const modalAddBlock = el('modalAddBlock');
+  const choiceAddMaterials = el('choiceAddMaterials');
+  const choiceAddFloorplan = el('choiceAddFloorplan');
+  const btnCancelAddBlock = el('btnCancelAddBlock');
+  const fpModeWallBtn = el('fpModeWall');
+  const fpModeSymbolBtn = el('fpModeSymbol');
+  const fpUndoBtn = el('fpUndo');
+  const fpFinishBtn = el('fpFinish');
+  const fpClearBtn = el('fpClear');
+  const symbolPalette = el('symbolPalette');
+  const fpHint = el('fpHint');
+  const floorplanSvg = el('floorplanSvg');
   const markerList = el('markerList');
   const markerCountLabel = el('markerCountLabel');
   const modeToggle = el('modeToggle');
@@ -699,6 +1038,10 @@
   const popupDesc = el('popupDesc');
   const pinSizeRange = el('pinSizeRange');
   const pinSizeValue = el('pinSizeValue');
+  const symbolSizeRange = el('symbolSizeRange');
+  const symbolSizeValue = el('symbolSizeValue');
+  const dimSizeRange = el('dimSizeRange');
+  const dimSizeValue = el('dimSizeValue');
   let editorMode = 'edit';
   let currentPhotoIndex = 0;
   function activePhoto(){
@@ -724,6 +1067,625 @@
       currentProject.updatedAt = Date.now();
       await persistCurrentAndSummary();
     }, 500);
+  });
+
+  let symbolSizeDebounce = null;
+  symbolSizeRange.addEventListener('input', ()=>{
+    if(!currentProject) return;
+    const pct = parseInt(symbolSizeRange.value, 10);
+    symbolSizeValue.textContent = pct + '%';
+    currentProject.symbolSize = pct;
+    renderFloorplan();
+    clearTimeout(symbolSizeDebounce);
+    symbolSizeDebounce = setTimeout(async ()=>{
+      currentProject.updatedAt = Date.now();
+      await persistCurrentAndSummary();
+    }, 500);
+  });
+
+  let dimSizeDebounce = null;
+  dimSizeRange.addEventListener('input', ()=>{
+    if(!currentProject) return;
+    const pct = parseInt(dimSizeRange.value, 10);
+    dimSizeValue.textContent = pct + '%';
+    currentProject.dimSize = pct;
+    renderFloorplan();
+    clearTimeout(dimSizeDebounce);
+    dimSizeDebounce = setTimeout(async ()=>{
+      currentProject.updatedAt = Date.now();
+      await persistCurrentAndSummary();
+    }, 500);
+  });
+
+  /* ---------------- Materials table ---------------- */
+  let materialsDebounce = null;
+  function scheduleMaterialsSave(){
+    clearTimeout(materialsDebounce);
+    materialsDebounce = setTimeout(async ()=>{
+      currentProject.updatedAt = Date.now();
+      await persistCurrentAndSummary();
+    }, 500);
+  }
+  function fmtMoney(n){
+    if(!isFinite(n)) n = 0;
+    return n.toLocaleString(LOCALE_MAP[currentLang] || 'ru-RU', {minimumFractionDigits:0, maximumFractionDigits:2});
+  }
+  function escapeAttr(s){
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  }
+  function renderMaterials(){
+    if(!currentProject) return;
+    const list = currentProject.materials || [];
+    materialsRows.innerHTML = '';
+    materialsEmpty.classList.toggle('hidden', list.length > 0);
+    let total = 0;
+    list.forEach((item, idx)=>{
+      const qty = parseFloat(item.qty) || 0;
+      const price = parseFloat(item.price) || 0;
+      const sum = qty * price;
+      total += sum;
+
+      const row = document.createElement('div');
+      row.className = 'materials-row';
+      row.innerHTML = `
+        <input type="text" class="mat-name" value="${escapeAttr(item.name || '')}" placeholder="${escapeAttr(t('materials.namePlaceholder'))}">
+        <input type="number" class="mat-qty" value="${qty}" min="0" step="any" inputmode="decimal">
+        <input type="number" class="mat-price" value="${price}" min="0" step="any" inputmode="decimal">
+        <span class="materials-row-sum">${fmtMoney(sum)}</span>
+        <button type="button" class="materials-row-del" title="${escapeAttr(t('btn.delete'))}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/></svg>
+        </button>`;
+
+      row.querySelector('.mat-name').addEventListener('input', (e)=>{
+        item.name = e.target.value;
+        scheduleMaterialsSave();
+      });
+      row.querySelector('.mat-qty').addEventListener('input', (e)=>{
+        item.qty = e.target.value;
+        updateMaterialsSums();
+        scheduleMaterialsSave();
+      });
+      row.querySelector('.mat-price').addEventListener('input', (e)=>{
+        item.price = e.target.value;
+        updateMaterialsSums();
+        scheduleMaterialsSave();
+      });
+      row.querySelector('.materials-row-del').addEventListener('click', ()=>{
+        currentProject.materials.splice(idx, 1);
+        renderMaterials();
+        scheduleMaterialsSave();
+      });
+
+      materialsRows.appendChild(row);
+    });
+    materialsTotalValue.textContent = fmtMoney(total);
+  }
+  function updateMaterialsSums(){
+    const list = currentProject.materials || [];
+    const rows = materialsRows.querySelectorAll('.materials-row');
+    let total = 0;
+    list.forEach((item, idx)=>{
+      const qty = parseFloat(item.qty) || 0;
+      const price = parseFloat(item.price) || 0;
+      const sum = qty * price;
+      total += sum;
+      const row = rows[idx];
+      if(row) row.querySelector('.materials-row-sum').textContent = fmtMoney(sum);
+    });
+    materialsTotalValue.textContent = fmtMoney(total);
+  }
+  btnAddMaterial.addEventListener('click', ()=>{
+    if(!currentProject) return;
+    if(!Array.isArray(currentProject.materials)) currentProject.materials = [];
+    currentProject.materials.push({id: uid(), name:'', qty:1, price:0});
+    renderMaterials();
+    scheduleMaterialsSave();
+    const inputs = materialsRows.querySelectorAll('.mat-name');
+    if(inputs.length) inputs[inputs.length-1].focus();
+  });
+
+  /* ---------------- Optional blocks (materials / floor plan) ---------------- */
+  btnAddBlock.addEventListener('click', ()=>{
+    if(!currentProject) return;
+    updateBlockVisibility();
+    modalAddBlock.hidden = false;
+  });
+  btnCancelAddBlock.addEventListener('click', ()=>{ modalAddBlock.hidden = true; });
+  choiceAddMaterials.addEventListener('click', async ()=>{
+    currentProject.hasMaterials = true;
+    modalAddBlock.hidden = true;
+    updateBlockVisibility();
+    materialsSection.scrollIntoView({behavior:'smooth', block:'start'});
+    await scheduleBlockFlagsSave();
+  });
+  choiceAddFloorplan.addEventListener('click', async ()=>{
+    currentProject.hasFloorplan = true;
+    modalAddBlock.hidden = true;
+    updateBlockVisibility();
+    floorplanSection.scrollIntoView({behavior:'smooth', block:'start'});
+    await scheduleBlockFlagsSave();
+  });
+  btnRemoveMaterials.addEventListener('click', async ()=>{
+    currentProject.hasMaterials = false;
+    updateBlockVisibility();
+    await scheduleBlockFlagsSave();
+  });
+  btnRemoveFloorplan.addEventListener('click', async ()=>{
+    currentProject.hasFloorplan = false;
+    updateBlockVisibility();
+    await scheduleBlockFlagsSave();
+  });
+  async function scheduleBlockFlagsSave(){
+    currentProject.updatedAt = Date.now();
+    await persistCurrentAndSummary();
+  }
+
+  /* ---------------- Floor plan ---------------- */
+  const SYMBOL_TYPES = ['socket','socket_double','socket_grounded','socket_waterproof','socket_3phase',
+    'switch_1','switch_2','switch_pass','dimmer',
+    'light','chandelier','sconce','spot',
+    'junction_box','panel','meter','fan','bell','tv_outlet','data_outlet'];
+
+  function symbolGlyph(type){
+    switch(type){
+      case 'socket': return '<circle class="dot" cx="-0.6" cy="0" r="0.35"/><circle class="dot" cx="0.6" cy="0" r="0.35"/>';
+      case 'socket_double': return '<circle class="dot" cx="-0.9" cy="-0.5" r="0.28"/><circle class="dot" cx="0.9" cy="-0.5" r="0.28"/><circle class="dot" cx="-0.9" cy="0.5" r="0.28"/><circle class="dot" cx="0.9" cy="0.5" r="0.28"/>';
+      case 'socket_grounded': return '<circle class="dot" cx="-0.6" cy="-0.4" r="0.28"/><circle class="dot" cx="0.6" cy="-0.4" r="0.28"/><path d="M-0.5,0.7 H0.5 M-0.3,1.0 H0.3 M-0.1,1.3 H0.1"/>';
+      case 'socket_waterproof': return '<circle class="dot" cx="-0.6" cy="0.2" r="0.28"/><circle class="dot" cx="0.6" cy="0.2" r="0.28"/><path d="M-1.3,-0.6 A1.3,1 0 0 1 1.3,-0.6"/>';
+      case 'socket_3phase': return '<path d="M0,-1.4 V-0.3 M-1.2,-1 L-0.5,-0.2 M1.2,-1 L0.5,-0.2 M-1.4,0.3 H-0.4 M1.4,0.3 H0.4"/>';
+      case 'switch_1': return '<path d="M-1.3,1.3 L0,0 L0.9,-0.9"/>';
+      case 'switch_2': return '<path d="M-1.3,1.3 L0,0 L0.9,-0.9 M-0.5,1.3 L0.6,0.3"/>';
+      case 'switch_pass': return '<path d="M-1.3,1.3 L0,0 L0.9,-0.9 M0.4,-1.3 L0.9,-0.9 L0.35,-0.55"/>';
+      case 'dimmer': return '<path d="M-1.3,1.3 L0,0 L0.9,-0.9"/><path class="dot-line" d="M0.9,-0.9 L1.5,-0.5 L1.05,0.05 Z"/>';
+      case 'light': return '<path d="M-1.1,-1.1 L1.1,1.1 M-1.1,1.1 L1.1,-1.1"/>';
+      case 'chandelier': return '<path d="M-1.3,0 H1.3 M0,-1.3 V1.3 M-0.9,-0.9 L0.9,0.9 M-0.9,0.9 L0.9,-0.9"/>';
+      case 'sconce': return '<path d="M-1.1,0.7 A1.1,1.1 0 0 1 1.1,0.7 Z"/>';
+      case 'spot': return '<circle class="dot" cx="0" cy="0" r="0.55"/>';
+      case 'junction_box': return '<rect x="-1" y="-1" width="2" height="2"/><path d="M-1,-1 L1,1 M-1,1 L1,-1"/>';
+      case 'panel': return '<rect x="-1.3" y="-1" width="2.6" height="2"/><path d="M-0.8,-1 V1 M0,-1 V1 M0.8,-1 V1"/>';
+      case 'meter': return '<circle cx="0" cy="0" r="1.1"/><path d="M0,0 L0.65,-0.55"/>';
+      case 'fan': return '<path d="M0,0 Q-1,-1.1 0,-1.5 Q1,-1.1 0,0 Q1,1.1 1.5,0 Q1,-1.1 0,0 Q-1,1.1 -1.5,0 Q-1,-1.1 0,0"/>';
+      case 'bell': return '<path d="M0,-1.2 A0.95,0.95 0 0 1 0.95,-0.25 V0.45 L1.25,0.85 H-1.25 L-0.95,0.45 V-0.25 A0.95,0.95 0 0 1 0,-1.2 Z"/>';
+      case 'tv_outlet': return '<rect x="-1.1" y="-0.8" width="2.2" height="1.6" rx="0.2"/>';
+      case 'data_outlet': return '<circle class="dot" cx="-0.6" cy="0" r="0.3"/><circle class="dot" cx="0.6" cy="0" r="0.3"/><path d="M-0.3,0 H0.3"/>';
+      default: return '<circle class="dot" cx="0" cy="0" r="0.4"/>';
+    }
+  }
+  function symbolIconSvg(type, viewBox){
+    return `<svg viewBox="${viewBox||'-3 -3 6 6'}" fill="none">${symbolGlyph(type)}</svg>`;
+  }
+
+  let fpMode = 'wall';
+  let fpSelectedSymbolType = 'socket';
+  let fpDraft = [];
+  let fpDimDraftStart = null;
+  let fpEditingSymbolId = null;
+  let fpEditingDimId = null;
+  let fpPendingDim = null;
+  let fpSymbolJustDragged = false;
+  let fpDimJustDragged = false;
+  const fpModeDimBtn = el('fpModeDim');
+  const modalDimension = el('modalDimension');
+  const dimLabelInput = el('dimLabelInput');
+  const btnSaveDim = el('btnSaveDim');
+  const btnCancelDim = el('btnCancelDim');
+  const btnDeleteDim = el('btnDeleteDim');
+
+  function ensureFloorplan(){
+    if(!currentProject.floorplan || typeof currentProject.floorplan !== 'object'){
+      currentProject.floorplan = {walls:[], symbols:[], dimensions:[]};
+    }
+    if(!Array.isArray(currentProject.floorplan.walls)) currentProject.floorplan.walls = [];
+    if(!Array.isArray(currentProject.floorplan.symbols)) currentProject.floorplan.symbols = [];
+    if(!Array.isArray(currentProject.floorplan.dimensions)) currentProject.floorplan.dimensions = [];
+  }
+
+  let fpSaveDebounce = null;
+  function scheduleFloorplanSave(){
+    clearTimeout(fpSaveDebounce);
+    fpSaveDebounce = setTimeout(async ()=>{
+      currentProject.updatedAt = Date.now();
+      await persistCurrentAndSummary();
+    }, 500);
+  }
+
+  function renderSymbolPalette(){
+    symbolPalette.innerHTML = '';
+    SYMBOL_TYPES.forEach(type=>{
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'symbol-btn' + (type === fpSelectedSymbolType ? ' active' : '');
+      btn.innerHTML = symbolIconSvg(type) + `<span>${escapeHtml(t('fp.type.'+type))}</span>`;
+      btn.addEventListener('click', ()=>{
+        fpSelectedSymbolType = type;
+        renderSymbolPalette();
+      });
+      symbolPalette.appendChild(btn);
+    });
+  }
+
+  function setFpMode(mode){
+    fpMode = mode;
+    fpDraft = [];
+    fpDimDraftStart = null;
+    fpModeWallBtn.classList.toggle('active', mode === 'wall');
+    fpModeSymbolBtn.classList.toggle('active', mode === 'symbol');
+    fpModeDimBtn.classList.toggle('active', mode === 'dim');
+    symbolPalette.hidden = mode !== 'symbol';
+    fpHint.textContent = mode === 'wall' ? t('fp.hint.walls') : mode === 'symbol' ? t('fp.hint.symbols') : t('fp.hint.dimensions');
+    floorplanSvg.classList.toggle('fp-mode-wall', mode === 'wall');
+    floorplanSvg.classList.toggle('fp-mode-symbol', mode === 'symbol');
+    floorplanSvg.classList.toggle('fp-mode-dim', mode === 'dim');
+    renderFloorplan();
+  }
+  fpModeWallBtn.addEventListener('click', ()=>setFpMode('wall'));
+  fpModeSymbolBtn.addEventListener('click', ()=>setFpMode('symbol'));
+  fpModeDimBtn.addEventListener('click', ()=>setFpMode('dim'));
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs){
+    const e = document.createElementNS(SVG_NS, tag);
+    if(attrs) Object.keys(attrs).forEach(k=>e.setAttribute(k, attrs[k]));
+    return e;
+  }
+  function toViewboxPoints(points){
+    return points.map(p => (p.x*1).toFixed(2) + ',' + (p.y*0.75).toFixed(2)).join(' ');
+  }
+
+  function renderFloorplan(){
+    if(!currentProject) return;
+    ensureFloorplan();
+    floorplanSvg.innerHTML = '';
+
+    currentProject.floorplan.walls.forEach(wall=>{
+      if(wall.length < 2) return;
+      floorplanSvg.appendChild(svgEl('polyline', {class:'fp-wall', points: toViewboxPoints(wall)}));
+    });
+
+    if(fpDraft.length > 0){
+      if(fpDraft.length > 1){
+        floorplanSvg.appendChild(svgEl('polyline', {class:'fp-wall-preview', points: toViewboxPoints(fpDraft)}));
+      }
+      fpDraft.forEach((p, i)=>{
+        floorplanSvg.appendChild(svgEl('circle', {
+          class: i === 0 ? 'fp-vertex fp-vertex-start' : 'fp-vertex',
+          cx: p.x, cy: p.y*0.75, r: 0.9
+        }));
+      });
+    }
+
+    currentProject.floorplan.symbols.forEach(sym=>{
+      const scale = (currentProject.symbolSize || 100) / 100;
+      const g = svgEl('g', {class:'fp-symbol', transform:`translate(${sym.x},${sym.y*0.75}) scale(${scale})`, 'data-id': sym.id});
+      g.appendChild(svgEl('circle', {class:'sym-bg', r:2.4}));
+      const inner = document.createElementNS(SVG_NS, 'g');
+      inner.innerHTML = symbolGlyph(sym.type);
+      // move the glyph's children into the main g (innerHTML on a namespaced g works in modern browsers)
+      g.appendChild(inner);
+      floorplanSvg.appendChild(g);
+      attachSymbolDrag(g, sym);
+    });
+
+    (currentProject.floorplan.dimensions||[]).forEach(dim=>{
+      const g = svgEl('g', {class:'fp-dim', 'data-id': dim.id});
+      const x1 = dim.x1, y1 = dim.y1*0.75, x2 = dim.x2, y2 = dim.y2*0.75;
+      const dx = x2-x1, dy = y2-y1;
+      const len = Math.hypot(dx,dy) || 1;
+      const nx = -dy/len, ny = dx/len; // unit normal, for tick marks
+      const tick = 1.1;
+      g.appendChild(svgEl('line', {class:'fp-dim-line', x1, y1, x2, y2}));
+      g.appendChild(svgEl('line', {class:'fp-dim-tick', x1:x1-nx*tick, y1:y1-ny*tick, x2:x1+nx*tick, y2:y1+ny*tick}));
+      g.appendChild(svgEl('line', {class:'fp-dim-tick', x1:x2-nx*tick, y1:y2-ny*tick, x2:x2+nx*tick, y2:y2+ny*tick}));
+      const mx = (x1+x2)/2, my = (y1+y2)/2;
+      const label = dim.label || '?';
+      const dimScale = (currentProject.dimSize || 100) / 100;
+      const bw = Math.max(4.2, label.length*1.19) * dimScale, bh = 2.24 * dimScale;
+      g.appendChild(svgEl('rect', {class:'fp-dim-label-bg', x:mx-bw/2, y:my-bh/2, width:bw, height:bh, rx:0.56*dimScale}));
+      const textEl = svgEl('text', {class:'fp-dim-label', x:mx, y:my+0.1, style:`font-size:${(1.68*dimScale).toFixed(2)}px`});
+      textEl.textContent = label;
+      g.appendChild(textEl);
+      const hitLine = svgEl('line', {class:'fp-dim-hit', x1, y1, x2, y2});
+      g.appendChild(hitLine);
+      floorplanSvg.appendChild(g);
+
+      if(fpMode === 'dim'){
+        attachDimLineDrag(hitLine, dim);
+      }
+
+      g.addEventListener('click', (ev)=>{
+        if(fpMode !== 'dim') return;
+        if(fpDimJustDragged){ fpDimJustDragged = false; return; }
+        ev.stopPropagation();
+        openDimensionModal(dim);
+      });
+    });
+
+    if(fpMode === 'dim' && fpDimDraftStart){
+      floorplanSvg.appendChild(svgEl('circle', {
+        class:'fp-dim-draft-point', cx: fpDimDraftStart.x, cy: fpDimDraftStart.y*0.75, r: 1
+      }));
+    }
+  }
+
+  function snapPointToWalls(px, py){
+    let best = null, bestDist = 2.2; // snap radius, viewbox units
+    (currentProject.floorplan.walls||[]).forEach(wall=>{
+      wall.forEach(pt=>{
+        const d = Math.hypot(pt.x-px, pt.y-py);
+        if(d < bestDist){ bestDist = d; best = pt; }
+      });
+    });
+    return best ? {x: best.x, y: best.y} : {x: px, y: py};
+  }
+
+  floorplanSvg.addEventListener('click', (ev)=>{
+    if(!currentProject) return;
+    if(fpSymbolJustDragged){ fpSymbolJustDragged = false; return; }
+    const rect = floorplanSvg.getBoundingClientRect();
+    if(rect.width === 0) return;
+    let px = ((ev.clientX - rect.left) / rect.width) * 100;
+    let py = ((ev.clientY - rect.top) / rect.height) * 100;
+    px = Math.max(0.5, Math.min(99.5, px));
+    py = Math.max(0.5, Math.min(99.5, py));
+
+    if(fpMode === 'wall'){
+      if(fpDraft.length > 0){
+        const prev = fpDraft[fpDraft.length-1];
+        const dx = px - prev.x, dy = py - prev.y;
+        if(Math.abs(dx) > Math.abs(dy)) py = prev.y; else px = prev.x;
+      }
+      if(fpDraft.length >= 2){
+        const start = fpDraft[0];
+        const dist = Math.hypot(px-start.x, py-start.y);
+        if(dist < 4){
+          fpDraft.push({x: start.x, y: start.y});
+          currentProject.floorplan.walls.push(fpDraft.slice());
+          fpDraft = [];
+          renderFloorplan();
+          scheduleFloorplanSave();
+          return;
+        }
+      }
+      fpDraft.push({x: px, y: py});
+      renderFloorplan();
+    }else if(fpMode === 'symbol'){
+      if(ev.target !== floorplanSvg && ev.target.closest && ev.target.closest('.fp-symbol')) return;
+      currentProject.floorplan.symbols.push({id: uid(), type: fpSelectedSymbolType, x: px, y: py, note: ''});
+      renderFloorplan();
+      scheduleFloorplanSave();
+    }else if(fpMode === 'dim'){
+      if(ev.target !== floorplanSvg && ev.target.closest && ev.target.closest('.fp-dim')) return;
+      const vs = snapPointToWalls(px, py);
+      const wasVertexSnapped = (vs.x !== px || vs.y !== py);
+      px = vs.x; py = vs.y;
+      if(!fpDimDraftStart){
+        fpDimDraftStart = {x: px, y: py};
+        renderFloorplan();
+      }else{
+        if(!wasVertexSnapped){
+          const dx = px - fpDimDraftStart.x, dy = py - fpDimDraftStart.y;
+          if(Math.abs(dx) > Math.abs(dy)) py = fpDimDraftStart.y; else px = fpDimDraftStart.x;
+        }
+        fpPendingDim = {id: uid(), x1: fpDimDraftStart.x, y1: fpDimDraftStart.y, x2: px, y2: py, label: ''};
+        fpDimDraftStart = null;
+        fpEditingDimId = null;
+        dimLabelInput.value = '';
+        btnDeleteDim.hidden = true;
+        modalDimension.hidden = false;
+        setTimeout(()=>dimLabelInput.focus(), 50);
+      }
+    }
+  });
+
+  fpUndoBtn.addEventListener('click', ()=>{
+    if(!currentProject) return;
+    if(fpMode === 'dim'){
+      if(fpDimDraftStart){
+        fpDimDraftStart = null;
+      }else if(currentProject.floorplan.dimensions.length > 0){
+        currentProject.floorplan.dimensions.pop();
+        scheduleFloorplanSave();
+      }
+    }else if(fpDraft.length > 0){
+      fpDraft.pop();
+    }else if(currentProject.floorplan.walls.length > 0){
+      currentProject.floorplan.walls.pop();
+      scheduleFloorplanSave();
+    }
+    renderFloorplan();
+  });
+  fpFinishBtn.addEventListener('click', ()=>{
+    if(!currentProject || fpDraft.length < 2) return;
+    currentProject.floorplan.walls.push(fpDraft.slice());
+    fpDraft = [];
+    renderFloorplan();
+    scheduleFloorplanSave();
+  });
+  fpClearBtn.addEventListener('click', ()=>{
+    if(!currentProject) return;
+    askConfirm(t('fp.confirmClear.title'), t('fp.confirmClear.text'), async ()=>{
+      currentProject.floorplan = {walls:[], symbols:[], dimensions:[]};
+      fpDraft = [];
+      renderFloorplan();
+      scheduleFloorplanSave();
+    });
+  });
+
+  function attachDimEndpointDrag(handle, dim, xKey, yKey){
+    let startX, startY, moved = false;
+    handle.addEventListener('pointerdown', (ev)=>{
+      ev.stopPropagation();
+      startX = ev.clientX; startY = ev.clientY; moved = false;
+
+      function onMove(e){
+        const dx0 = e.clientX - startX, dy0 = e.clientY - startY;
+        if(!moved && Math.hypot(dx0,dy0) > 5) moved = true;
+        if(!moved) return;
+        const rect = floorplanSvg.getBoundingClientRect();
+        if(rect.width === 0) return;
+        let px = ((e.clientX - rect.left) / rect.width) * 100;
+        let py = ((e.clientY - rect.top) / rect.height) * 100;
+        px = Math.max(0.5, Math.min(99.5, px));
+        py = Math.max(0.5, Math.min(99.5, py));
+        const snapped = snapPointToWalls(px, py);
+        dim[xKey] = snapped.x;
+        dim[yKey] = snapped.y;
+        renderFloorplan();
+      }
+      function onUp(){
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        if(moved){
+          fpDimJustDragged = true;
+          renderFloorplan();
+          scheduleFloorplanSave();
+        }
+      }
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+    });
+  }
+
+  function attachDimLineDrag(hitLine, dim){
+    let startX, startY, moved = false;
+    hitLine.addEventListener('pointerdown', (ev)=>{
+      ev.stopPropagation();
+      startX = ev.clientX; startY = ev.clientY; moved = false;
+      const origin = {x1: dim.x1, y1: dim.y1, x2: dim.x2, y2: dim.y2};
+      try{ hitLine.setPointerCapture(ev.pointerId); }catch(e){}
+
+      function onMove(e){
+        const dxPx = e.clientX - startX, dyPx = e.clientY - startY;
+        if(!moved && Math.hypot(dxPx,dyPx) > 5) moved = true;
+        if(!moved) return;
+        const rect = floorplanSvg.getBoundingClientRect();
+        if(rect.width === 0) return;
+        const dPctX = (dxPx / rect.width) * 100;
+        const dPctY = (dyPx / rect.height) * 100 / 0.75;
+        dim.x1 = origin.x1 + dPctX; dim.y1 = origin.y1 + dPctY;
+        dim.x2 = origin.x2 + dPctX; dim.y2 = origin.y2 + dPctY;
+        renderFloorplan();
+      }
+      function onUp(){
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        if(moved){
+          fpDimJustDragged = true;
+          renderFloorplan();
+          scheduleFloorplanSave();
+        }
+      }
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+    });
+  }
+
+  function attachSymbolDrag(g, sym){
+    let startX, startY, moved = false;
+    g.addEventListener('pointerdown', (ev)=>{
+      if(fpMode !== 'symbol') return;
+      ev.stopPropagation();
+      startX = ev.clientX; startY = ev.clientY; moved = false;
+      try{ g.setPointerCapture(ev.pointerId); }catch(e){}
+
+      function onMove(e){
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if(!moved && Math.hypot(dx,dy) > 5){ moved = true; g.classList.add('dragging'); }
+        if(!moved) return;
+        const rect = floorplanSvg.getBoundingClientRect();
+        if(rect.width === 0) return;
+        let px = ((e.clientX - rect.left) / rect.width) * 100;
+        let py = ((e.clientY - rect.top) / rect.height) * 100;
+        px = Math.max(0.5, Math.min(99.5, px));
+        py = Math.max(0.5, Math.min(99.5, py));
+        const scale = (currentProject.symbolSize || 100) / 100;
+        g.setAttribute('transform', `translate(${px},${py*0.75}) scale(${scale})`);
+        g.dataset.pendingX = px;
+        g.dataset.pendingY = py;
+      }
+      function onUp(){
+        g.removeEventListener('pointermove', onMove);
+        g.removeEventListener('pointerup', onUp);
+        g.classList.remove('dragging');
+        if(moved){
+          fpSymbolJustDragged = true;
+          sym.x = parseFloat(g.dataset.pendingX);
+          sym.y = parseFloat(g.dataset.pendingY);
+          scheduleFloorplanSave();
+        }else{
+          openSymbolModal(sym);
+        }
+      }
+      g.addEventListener('pointermove', onMove);
+      g.addEventListener('pointerup', onUp);
+    });
+  }
+
+  const modalSymbol = el('modalSymbol');
+  const symbolModalTitle = el('symbolModalTitle');
+  const symbolNoteInput = el('symbolNoteInput');
+  const btnDeleteSymbol = el('btnDeleteSymbol');
+  const btnCancelSymbol = el('btnCancelSymbol');
+  const btnSaveSymbol = el('btnSaveSymbol');
+
+  function openSymbolModal(sym){
+    fpEditingSymbolId = sym.id;
+    symbolModalTitle.textContent = t('fp.type.'+sym.type);
+    symbolNoteInput.value = sym.note || '';
+    modalSymbol.hidden = false;
+  }
+  btnCancelSymbol.addEventListener('click', ()=>{ modalSymbol.hidden = true; fpEditingSymbolId = null; });
+  btnSaveSymbol.addEventListener('click', ()=>{
+    const sym = currentProject.floorplan.symbols.find(s=>s.id === fpEditingSymbolId);
+    if(sym) sym.note = symbolNoteInput.value.trim();
+    modalSymbol.hidden = true;
+    fpEditingSymbolId = null;
+    scheduleFloorplanSave();
+  });
+  btnDeleteSymbol.addEventListener('click', ()=>{
+    currentProject.floorplan.symbols = currentProject.floorplan.symbols.filter(s=>s.id !== fpEditingSymbolId);
+    modalSymbol.hidden = true;
+    fpEditingSymbolId = null;
+    renderFloorplan();
+    scheduleFloorplanSave();
+  });
+
+  function openDimensionModal(dim){
+    fpEditingDimId = dim.id;
+    fpPendingDim = null;
+    dimLabelInput.value = dim.label || '';
+    btnDeleteDim.hidden = false;
+    modalDimension.hidden = false;
+    setTimeout(()=>dimLabelInput.focus(), 50);
+  }
+  function closeDimensionModal(){
+    modalDimension.hidden = true;
+    fpEditingDimId = null;
+    fpPendingDim = null;
+    renderFloorplan();
+  }
+  btnCancelDim.addEventListener('click', closeDimensionModal);
+  btnSaveDim.addEventListener('click', ()=>{
+    const label = dimLabelInput.value.trim();
+    if(fpPendingDim){
+      fpPendingDim.label = label;
+      currentProject.floorplan.dimensions.push(fpPendingDim);
+    }else if(fpEditingDimId){
+      const dim = currentProject.floorplan.dimensions.find(d=>d.id === fpEditingDimId);
+      if(dim) dim.label = label;
+    }
+    modalDimension.hidden = true;
+    fpEditingDimId = null;
+    fpPendingDim = null;
+    renderFloorplan();
+    scheduleFloorplanSave();
+  });
+  btnDeleteDim.addEventListener('click', ()=>{
+    currentProject.floorplan.dimensions = currentProject.floorplan.dimensions.filter(d=>d.id !== fpEditingDimId);
+    modalDimension.hidden = true;
+    fpEditingDimId = null;
+    renderFloorplan();
+    scheduleFloorplanSave();
   });
 
   const modalMarker = el('modalMarker');
@@ -778,7 +1740,7 @@
       'toast.storageUnavailable':'Хранилище недоступно — проверьте подключение к Supabase','toast.sbNotConfigured':'Впишите SUPABASE_URL и SUPABASE_ANON_KEY в код сайта, чтобы включить сохранение',
       'toast.sbSaveFailed':'Не удалось сохранить в Supabase — проверьте связь','toast.pdfPhotoFailed':'Не удалось загрузить фото для сохранения в PDF',
       'toast.sbLibFailed':'Не удалось загрузить библиотеку Supabase. Проверьте интернет-соединение и перезагрузите страницу.',
-      'print.noMarkers':'Меток пока нет.','editor.subtitle':'Редактирование щита','project.untitled':'Без названия','photo.add':'Добавить фото','confirm.deletePhoto.title':'Удалить фото?','confirm.deletePhoto.text':'Фото и все его метки будут удалены безвозвратно.'
+      'print.noMarkers':'Меток пока нет.','editor.subtitle':'Редактирование щита','project.untitled':'Без названия','photo.add':'Добавить фото','confirm.deletePhoto.title':'Удалить фото?','confirm.deletePhoto.text':'Фото и все его метки будут удалены безвозвратно.','materials.heading':'Материалы','materials.col.name':'Наименование','materials.col.qty':'Кол-во','materials.col.price':'Цена','materials.col.sum':'Сумма','materials.empty':'Список пуст. Добавьте первую позицию.','materials.addRow':'+ Добавить позицию','materials.total':'Итого','materials.namePlaceholder':'Например: Автомат 16А','fp.heading':'План помещения','fp.mode.walls':'Стены','fp.mode.symbols':'Обозначения','fp.undo':'Отменить точку','fp.finish':'Завершить контур','fp.clear':'Очистить всё','fp.hint.walls':'Нажимайте по очереди на углы комнаты — линии соединятся автоматически. Чтобы замкнуть контур, нажмите рядом с первой точкой.','fp.hint.symbols':'Выберите обозначение внизу и нажмите на план, чтобы разместить его. Перетаскивайте, чтобы переместить.','fp.confirmClear.title':'Очистить план?','fp.confirmClear.text':'Все стены и обозначения на плане будут удалены безвозвратно.','fp.symbol.noteLabel':'Заметка (необязательно)','fp.type.socket':'Розетка','fp.type.socket_double':'Розетка двойная','fp.type.socket_grounded':'Розетка с заземлением','fp.type.socket_waterproof':'Розетка влагозащищённая','fp.type.socket_3phase':'Розетка силовая (3 фазы)','fp.type.switch_1':'Выключатель одноклавишный','fp.type.switch_2':'Выключатель двухклавишный','fp.type.switch_pass':'Выключатель проходной','fp.type.dimmer':'Диммер','fp.type.light':'Светильник','fp.type.chandelier':'Люстра','fp.type.sconce':'Бра (настенный светильник)','fp.type.spot':'Точечный светильник','fp.type.junction_box':'Распределительная коробка','fp.type.panel':'Электрощит','fp.type.meter':'Счётчик электроэнергии','fp.type.fan':'Вентилятор','fp.type.bell':'Звонок','fp.type.tv_outlet':'ТВ розетка','fp.type.data_outlet':'Розетка интернет/LAN','fp.symbolSize.title':'Размер значков обозначений','block.add':'Добавить блок','block.remove':'Убрать блок','block.pickTitle':'Добавить блок','block.materials.desc':'Список товаров с ценами и суммой','block.floorplan.desc':'Стены и условные обозначения','fp.mode.dimensions':'Размеры','fp.hint.dimensions':'Нажмите на первую точку, затем на вторую — появится поле для ввода расстояния. Можно измерять стены или расстояние до любого объекта.','fp.dim.modalTitle':'Размер','fp.dim.label':'Значение','fp.dim.placeholder':'Например: 3,2 м','fp.dimSize.title':'Размер ячеек размеров'
     },
     uk:{
       'brand.name':'Щитова','app.tagline':'Маркування електрощитів','list.title':'Проєкти',
@@ -802,7 +1764,7 @@
       'toast.storageUnavailable':'Сховище недоступне — перевірте підключення до Supabase','toast.sbNotConfigured':'Впишіть SUPABASE_URL і SUPABASE_ANON_KEY у код сайту, щоб увімкнути збереження',
       'toast.sbSaveFailed':'Не вдалося зберегти в Supabase — перевірте з’єднання','toast.pdfPhotoFailed':'Не вдалося завантажити фото для збереження в PDF',
       'toast.sbLibFailed':'Не вдалося завантажити бібліотеку Supabase. Перевірте інтернет-з’єднання і перезавантажте сторінку.',
-      'print.noMarkers':'Міток поки немає.','editor.subtitle':'Редагування щита','project.untitled':'Без назви','photo.add':'Додати фото','confirm.deletePhoto.title':'Видалити фото?','confirm.deletePhoto.text':'Фото і всі його мітки будуть видалені назавжди.'
+      'print.noMarkers':'Міток поки немає.','editor.subtitle':'Редагування щита','project.untitled':'Без назви','photo.add':'Додати фото','confirm.deletePhoto.title':'Видалити фото?','confirm.deletePhoto.text':'Фото і всі його мітки будуть видалені назавжди.','materials.heading':'Матеріали','materials.col.name':'Найменування','materials.col.qty':'К-сть','materials.col.price':'Ціна','materials.col.sum':'Сума','materials.empty':'Список порожній. Додайте першу позицію.','materials.addRow':'+ Додати позицію','materials.total':'Разом','materials.namePlaceholder':'Наприклад: Автомат 16А','fp.heading':'План приміщення','fp.mode.walls':'Стіни','fp.mode.symbols':'Позначення','fp.undo':'Скасувати точку','fp.finish':'Завершити контур','fp.clear':'Очистити все','fp.hint.walls':'Натискайте по черзі на кути кімнати — лінії з’єднаються автоматично. Щоб замкнути контур, натисніть біля першої точки.','fp.hint.symbols':'Виберіть позначення внизу і натисніть на план, щоб розмістити його. Перетягуйте, щоб перемістити.','fp.confirmClear.title':'Очистити план?','fp.confirmClear.text':'Усі стіни та позначення на плані будуть видалені назавжди.','fp.symbol.noteLabel':'Нотатка (необов’язково)','fp.type.socket':'Розетка','fp.type.socket_double':'Розетка подвійна','fp.type.socket_grounded':'Розетка із заземленням','fp.type.socket_waterproof':'Розетка вологозахищена','fp.type.socket_3phase':'Розетка силова (3 фази)','fp.type.switch_1':'Вимикач одноклавішний','fp.type.switch_2':'Вимикач двоклавішний','fp.type.switch_pass':'Вимикач прохідний','fp.type.dimmer':'Димер','fp.type.light':'Світильник','fp.type.chandelier':'Люстра','fp.type.sconce':'Бра (настінний світильник)','fp.type.spot':'Точковий світильник','fp.type.junction_box':'Розподільна коробка','fp.type.panel':'Електрощит','fp.type.meter':'Лічильник електроенергії','fp.type.fan':'Вентилятор','fp.type.bell':'Дзвінок','fp.type.tv_outlet':'ТВ розетка','fp.type.data_outlet':'Розетка інтернет/LAN','fp.symbolSize.title':'Розмір значків позначень','block.add':'Додати блок','block.remove':'Прибрати блок','block.pickTitle':'Додати блок','block.materials.desc':'Список товарів із цінами та сумою','block.floorplan.desc':'Стіни та умовні позначення','fp.mode.dimensions':'Розміри','fp.hint.dimensions':'Натисніть на першу точку, потім на другу — з’явиться поле для введення відстані. Можна вимірювати стіни або відстань до будь-якого об’єкта.','fp.dim.modalTitle':'Розмір','fp.dim.label':'Значення','fp.dim.placeholder':'Наприклад: 3,2 м','fp.dimSize.title':'Розмір коміток розмірів'
     },
     en:{
       'brand.name':'PanelBoard','app.tagline':'Electrical panel labeling','list.title':'Projects',
@@ -826,7 +1788,7 @@
       'toast.storageUnavailable':'Storage unavailable — check your Supabase connection','toast.sbNotConfigured':'Fill in SUPABASE_URL and SUPABASE_ANON_KEY in the site code to enable saving',
       'toast.sbSaveFailed':'Could not save to Supabase — check your connection','toast.pdfPhotoFailed':'Could not load the photo for the PDF',
       'toast.sbLibFailed':'Could not load the Supabase library. Check your internet connection and reload the page.',
-      'print.noMarkers':'No markers yet.','editor.subtitle':'Editing panel','project.untitled':'Untitled','photo.add':'Add photo','confirm.deletePhoto.title':'Delete this photo?','confirm.deletePhoto.text':'The photo and all its markers will be permanently deleted.'
+      'print.noMarkers':'No markers yet.','editor.subtitle':'Editing panel','project.untitled':'Untitled','photo.add':'Add photo','confirm.deletePhoto.title':'Delete this photo?','confirm.deletePhoto.text':'The photo and all its markers will be permanently deleted.','materials.heading':'Materials','materials.col.name':'Item','materials.col.qty':'Qty','materials.col.price':'Price','materials.col.sum':'Sum','materials.empty':'The list is empty. Add the first item.','materials.addRow':'+ Add item','materials.total':'Total','materials.namePlaceholder':'E.g.: 16A breaker','fp.heading':'Floor plan','fp.mode.walls':'Walls','fp.mode.symbols':'Symbols','fp.undo':'Undo point','fp.finish':'Finish outline','fp.clear':'Clear all','fp.hint.walls':'Tap the room’s corners one by one — the lines connect automatically. Tap near the first point to close the outline.','fp.hint.symbols':'Pick a symbol below, then tap the plan to place it. Drag to move it.','fp.confirmClear.title':'Clear the plan?','fp.confirmClear.text':'All walls and symbols on the plan will be permanently deleted.','fp.symbol.noteLabel':'Note (optional)','fp.type.socket':'Outlet','fp.type.socket_double':'Double outlet','fp.type.socket_grounded':'Grounded outlet','fp.type.socket_waterproof':'Waterproof outlet','fp.type.socket_3phase':'Power outlet (3-phase)','fp.type.switch_1':'Single-gang switch','fp.type.switch_2':'Two-gang switch','fp.type.switch_pass':'Two-way switch','fp.type.dimmer':'Dimmer','fp.type.light':'Light fixture','fp.type.chandelier':'Chandelier','fp.type.sconce':'Wall light','fp.type.spot':'Spotlight','fp.type.junction_box':'Junction box','fp.type.panel':'Distribution panel','fp.type.meter':'Electricity meter','fp.type.fan':'Fan','fp.type.bell':'Doorbell','fp.type.tv_outlet':'TV outlet','fp.type.data_outlet':'Network/LAN outlet','fp.symbolSize.title':'Symbol icon size','block.add':'Add block','block.remove':'Remove block','block.pickTitle':'Add a block','block.materials.desc':'A list of items with prices and totals','block.floorplan.desc':'Walls and electrical symbols','fp.mode.dimensions':'Dimensions','fp.hint.dimensions':'Tap the first point, then the second — a field to enter the distance will appear. You can measure walls or the distance to any object.','fp.dim.modalTitle':'Dimension','fp.dim.label':'Value','fp.dim.placeholder':'E.g.: 3.2 m','fp.dimSize.title':'Dimension label size'
     },
     de:{
       'brand.name':'Verteiler','app.tagline':'Kennzeichnung von Elektroverteilern','list.title':'Projekte',
@@ -850,7 +1812,7 @@
       'toast.storageUnavailable':'Speicher nicht verfügbar — Supabase-Verbindung prüfen','toast.sbNotConfigured':'SUPABASE_URL und SUPABASE_ANON_KEY im Code eintragen, um das Speichern zu aktivieren',
       'toast.sbSaveFailed':'Speichern in Supabase fehlgeschlagen — Verbindung prüfen','toast.pdfPhotoFailed':'Foto für das PDF konnte nicht geladen werden',
       'toast.sbLibFailed':'Supabase-Bibliothek konnte nicht geladen werden. Internetverbindung prüfen und Seite neu laden.',
-      'print.noMarkers':'Noch keine Markierungen.','editor.subtitle':'Verteiler bearbeiten','project.untitled':'Ohne Namen','photo.add':'Foto hinzufügen','confirm.deletePhoto.title':'Foto löschen?','confirm.deletePhoto.text':'Das Foto und alle seine Markierungen werden endgültig gelöscht.'
+      'print.noMarkers':'Noch keine Markierungen.','editor.subtitle':'Verteiler bearbeiten','project.untitled':'Ohne Namen','photo.add':'Foto hinzufügen','confirm.deletePhoto.title':'Foto löschen?','confirm.deletePhoto.text':'Das Foto und alle seine Markierungen werden endgültig gelöscht.','materials.heading':'Materialien','materials.col.name':'Bezeichnung','materials.col.qty':'Menge','materials.col.price':'Preis','materials.col.sum':'Summe','materials.empty':'Die Liste ist leer. Fügen Sie den ersten Posten hinzu.','materials.addRow':'+ Position hinzufügen','materials.total':'Gesamt','materials.namePlaceholder':'Z. B.: 16A-Automat','fp.heading':'Grundriss','fp.mode.walls':'Wände','fp.mode.symbols':'Symbole','fp.undo':'Punkt rückgängig','fp.finish':'Kontur abschließen','fp.clear':'Alles löschen','fp.hint.walls':'Tippen Sie nacheinander auf die Raumecken — die Linien verbinden sich automatisch. Zum Schließen der Kontur in der Nähe des ersten Punkts tippen.','fp.hint.symbols':'Wählen Sie unten ein Symbol und tippen Sie auf den Plan, um es zu platzieren. Zum Verschieben ziehen.','fp.confirmClear.title':'Plan löschen?','fp.confirmClear.text':'Alle Wände und Symbole im Plan werden endgültig gelöscht.','fp.symbol.noteLabel':'Notiz (optional)','fp.type.socket':'Steckdose','fp.type.socket_double':'Doppelsteckdose','fp.type.socket_grounded':'Steckdose mit Erdung','fp.type.socket_waterproof':'Spritzwassergeschützte Steckdose','fp.type.socket_3phase':'Kraftsteckdose (3-phasig)','fp.type.switch_1':'Einfachschalter','fp.type.switch_2':'Doppelschalter','fp.type.switch_pass':'Wechselschalter','fp.type.dimmer':'Dimmer','fp.type.light':'Leuchte','fp.type.chandelier':'Kronleuchter','fp.type.sconce':'Wandleuchte','fp.type.spot':'Spot','fp.type.junction_box':'Abzweigdose','fp.type.panel':'Verteiler','fp.type.meter':'Stromzähler','fp.type.fan':'Ventilator','fp.type.bell':'Klingel','fp.type.tv_outlet':'TV-Anschluss','fp.type.data_outlet':'Netzwerk-/LAN-Anschluss','fp.symbolSize.title':'Symbolgröße','block.add':'Block hinzufügen','block.remove':'Block entfernen','block.pickTitle':'Block hinzufügen','block.materials.desc':'Artikelliste mit Preisen und Summe','block.floorplan.desc':'Wände und Elektrosymbole','fp.mode.dimensions':'Maße','fp.hint.dimensions':'Tippen Sie auf den ersten Punkt, dann auf den zweiten — ein Feld zur Eingabe der Entfernung erscheint. Sie können Wände oder den Abstand zu einem beliebigen Objekt messen.','fp.dim.modalTitle':'Maß','fp.dim.label':'Wert','fp.dim.placeholder':'Z. B.: 3,2 m','fp.dimSize.title':'Größe der Maßbeschriftung'
     },
     es:{
       'brand.name':'Cuadro','app.tagline':'Etiquetado de cuadros eléctricos','list.title':'Proyectos',
@@ -874,7 +1836,7 @@
       'toast.storageUnavailable':'Almacenamiento no disponible — comprueba la conexión con Supabase','toast.sbNotConfigured':'Escribe SUPABASE_URL y SUPABASE_ANON_KEY en el código del sitio para habilitar el guardado',
       'toast.sbSaveFailed':'No se pudo guardar en Supabase — comprueba tu conexión','toast.pdfPhotoFailed':'No se pudo cargar la foto para el PDF',
       'toast.sbLibFailed':'No se pudo cargar la librería de Supabase. Comprueba tu conexión a internet y recarga la página.',
-      'print.noMarkers':'Aún no hay marcadores.','editor.subtitle':'Editando cuadro','project.untitled':'Sin nombre','photo.add':'Añadir foto','confirm.deletePhoto.title':'¿Eliminar esta foto?','confirm.deletePhoto.text':'La foto y todos sus marcadores se eliminarán de forma permanente.'
+      'print.noMarkers':'Aún no hay marcadores.','editor.subtitle':'Editando cuadro','project.untitled':'Sin nombre','photo.add':'Añadir foto','confirm.deletePhoto.title':'¿Eliminar esta foto?','confirm.deletePhoto.text':'La foto y todos sus marcadores se eliminarán de forma permanente.','materials.heading':'Materiales','materials.col.name':'Artículo','materials.col.qty':'Cant.','materials.col.price':'Precio','materials.col.sum':'Importe','materials.empty':'La lista está vacía. Añade el primer artículo.','materials.addRow':'+ Añadir artículo','materials.total':'Total','materials.namePlaceholder':'Ej.: Interruptor 16A','fp.heading':'Plano de la habitación','fp.mode.walls':'Paredes','fp.mode.symbols':'Símbolos','fp.undo':'Deshacer punto','fp.finish':'Terminar contorno','fp.clear':'Borrar todo','fp.hint.walls':'Toca las esquinas de la habitación una a una — las líneas se conectan automáticamente. Toca cerca del primer punto para cerrar el contorno.','fp.hint.symbols':'Elige un símbolo abajo y toca el plano para colocarlo. Arrastra para moverlo.','fp.confirmClear.title':'¿Borrar el plano?','fp.confirmClear.text':'Todas las paredes y símbolos del plano se eliminarán de forma permanente.','fp.symbol.noteLabel':'Nota (opcional)','fp.type.socket':'Enchufe','fp.type.socket_double':'Enchufe doble','fp.type.socket_grounded':'Enchufe con toma de tierra','fp.type.socket_waterproof':'Enchufe estanco','fp.type.socket_3phase':'Toma de fuerza (trifásica)','fp.type.switch_1':'Interruptor simple','fp.type.switch_2':'Interruptor doble','fp.type.switch_pass':'Conmutador de escalera','fp.type.dimmer':'Regulador de intensidad','fp.type.light':'Luminaria','fp.type.chandelier':'Lámpara de araña','fp.type.sconce':'Aplique de pared','fp.type.spot':'Foco empotrado','fp.type.junction_box':'Caja de derivación','fp.type.panel':'Cuadro eléctrico','fp.type.meter':'Contador eléctrico','fp.type.fan':'Ventilador','fp.type.bell':'Timbre','fp.type.tv_outlet':'Toma de TV','fp.type.data_outlet':'Toma de red/LAN','fp.symbolSize.title':'Tamaño de los símbolos','block.add':'Añadir bloque','block.remove':'Quitar bloque','block.pickTitle':'Añadir un bloque','block.materials.desc':'Lista de artículos con precios y total','block.floorplan.desc':'Paredes y símbolos eléctricos','fp.mode.dimensions':'Medidas','fp.hint.dimensions':'Toca el primer punto y luego el segundo — aparecerá un campo para introducir la distancia. Puedes medir paredes o la distancia a cualquier objeto.','fp.dim.modalTitle':'Medida','fp.dim.label':'Valor','fp.dim.placeholder':'Ej.: 3,2 m','fp.dimSize.title':'Tamaño de las etiquetas de medida'
     },
     pt:{
       'brand.name':'Quadro','app.tagline':'Marcação de quadros elétricos','list.title':'Projetos',
@@ -898,7 +1860,7 @@
       'toast.storageUnavailable':'Armazenamento indisponível — verifique a ligação ao Supabase','toast.sbNotConfigured':'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no código do site para ativar o guardado',
       'toast.sbSaveFailed':'Não foi possível guardar no Supabase — verifique a ligação','toast.pdfPhotoFailed':'Não foi possível carregar a foto para o PDF',
       'toast.sbLibFailed':'Não foi possível carregar a biblioteca do Supabase. Verifique a ligação à internet e recarregue a página.',
-      'print.noMarkers':'Ainda não há marcadores.','editor.subtitle':'A editar o quadro','project.untitled':'Sem nome','photo.add':'Adicionar foto','confirm.deletePhoto.title':'Eliminar esta foto?','confirm.deletePhoto.text':'A foto e todos os seus marcadores serão eliminados permanentemente.'
+      'print.noMarkers':'Ainda não há marcadores.','editor.subtitle':'A editar o quadro','project.untitled':'Sem nome','photo.add':'Adicionar foto','confirm.deletePhoto.title':'Eliminar esta foto?','confirm.deletePhoto.text':'A foto e todos os seus marcadores serão eliminados permanentemente.','materials.heading':'Materiais','materials.col.name':'Artigo','materials.col.qty':'Qtd.','materials.col.price':'Preço','materials.col.sum':'Total','materials.empty':'A lista está vazia. Adicione o primeiro artigo.','materials.addRow':'+ Adicionar artigo','materials.total':'Total geral','materials.namePlaceholder':'Ex.: Disjuntor 16A','fp.heading':'Planta da divisão','fp.mode.walls':'Paredes','fp.mode.symbols':'Símbolos','fp.undo':'Desfazer ponto','fp.finish':'Terminar contorno','fp.clear':'Limpar tudo','fp.hint.walls':'Toque nos cantos da divisão, um a um — as linhas ligam-se automaticamente. Toque perto do primeiro ponto para fechar o contorno.','fp.hint.symbols':'Escolha um símbolo abaixo e toque na planta para o colocar. Arraste para mover.','fp.confirmClear.title':'Limpar a planta?','fp.confirmClear.text':'Todas as paredes e símbolos da planta serão eliminados permanentemente.','fp.symbol.noteLabel':'Nota (opcional)','fp.type.socket':'Tomada','fp.type.socket_double':'Tomada dupla','fp.type.socket_grounded':'Tomada com ligação à terra','fp.type.socket_waterproof':'Tomada estanque','fp.type.socket_3phase':'Tomada de força (trifásica)','fp.type.switch_1':'Interruptor simples','fp.type.switch_2':'Interruptor duplo','fp.type.switch_pass':'Interruptor de escada','fp.type.dimmer':'Regulador de intensidade','fp.type.light':'Luminária','fp.type.chandelier':'Lustre','fp.type.sconce':'Arandela','fp.type.spot':'Foco embutido','fp.type.junction_box':'Caixa de derivação','fp.type.panel':'Quadro elétrico','fp.type.meter':'Contador de eletricidade','fp.type.fan':'Ventilador','fp.type.bell':'Campainha','fp.type.tv_outlet':'Tomada de TV','fp.type.data_outlet':'Tomada de rede/LAN','fp.symbolSize.title':'Tamanho dos símbolos','block.add':'Adicionar bloco','block.remove':'Remover bloco','block.pickTitle':'Adicionar um bloco','block.materials.desc':'Lista de artigos com preços e total','block.floorplan.desc':'Paredes e símbolos elétricos','fp.mode.dimensions':'Medidas','fp.hint.dimensions':'Toque no primeiro ponto e depois no segundo — aparecerá um campo para introduzir a distância. Pode medir paredes ou a distância até qualquer objeto.','fp.dim.modalTitle':'Medida','fp.dim.label':'Valor','fp.dim.placeholder':'Ex.: 3,2 m','fp.dimSize.title':'Tamanho das etiquetas de medida'
     },
     cs:{
       'brand.name':'Rozvaděč','app.tagline':'Značení elektrických rozvaděčů','list.title':'Projekty',
@@ -922,7 +1884,7 @@
       'toast.storageUnavailable':'Úložiště nedostupné — zkontrolujte připojení k Supabase','toast.sbNotConfigured':'Vyplňte SUPABASE_URL a SUPABASE_ANON_KEY v kódu webu pro zapnutí ukládání',
       'toast.sbSaveFailed':'Uložení do Supabase se nezdařilo — zkontrolujte připojení','toast.pdfPhotoFailed':'Fotku pro PDF se nepodařilo načíst',
       'toast.sbLibFailed':'Knihovnu Supabase se nepodařilo načíst. Zkontrolujte internetové připojení a načtěte stránku znovu.',
-      'print.noMarkers':'Zatím žádné značky.','editor.subtitle':'Úprava rozvaděče','project.untitled':'Bez názvu','photo.add':'Přidat fotku','confirm.deletePhoto.title':'Smazat tuto fotku?','confirm.deletePhoto.text':'Fotka a všechny její značky budou trvale smazány.'
+      'print.noMarkers':'Zatím žádné značky.','editor.subtitle':'Úprava rozvaděče','project.untitled':'Bez názvu','photo.add':'Přidat fotku','confirm.deletePhoto.title':'Smazat tuto fotku?','confirm.deletePhoto.text':'Fotka a všechny její značky budou trvale smazány.','materials.heading':'Materiál','materials.col.name':'Položka','materials.col.qty':'Ks','materials.col.price':'Cena','materials.col.sum':'Součet','materials.empty':'Seznam je prázdný. Přidejte první položku.','materials.addRow':'+ Přidat položku','materials.total':'Celkem','materials.namePlaceholder':'Např.: Jistič 16A','fp.heading':'Půdorys místnosti','fp.mode.walls':'Stěny','fp.mode.symbols':'Značky','fp.undo':'Zpět o bod','fp.finish':'Dokončit obrys','fp.clear':'Vymazat vše','fp.hint.walls':'Klepejte postupně na rohy místnosti — čáry se propojí automaticky. Obrys uzavřete klepnutím blízko prvního bodu.','fp.hint.symbols':'Vyberte značku dole a klepnutím na plán ji umístěte. Přetažením ji přesunete.','fp.confirmClear.title':'Vymazat plán?','fp.confirmClear.text':'Všechny stěny a značky v plánu budou trvale smazány.','fp.symbol.noteLabel':'Poznámka (nepovinné)','fp.type.socket':'Zásuvka','fp.type.socket_double':'Dvojitá zásuvka','fp.type.socket_grounded':'Zásuvka s uzemněním','fp.type.socket_waterproof':'Zásuvka voděodolná','fp.type.socket_3phase':'Síťová zásuvka (třífázová)','fp.type.switch_1':'Jednopólový vypínač','fp.type.switch_2':'Dvoupólový vypínač','fp.type.switch_pass':'Schodišťový vypínač','fp.type.dimmer':'Stmívač','fp.type.light':'Svítidlo','fp.type.chandelier':'Lustr','fp.type.sconce':'Nástěnné svítidlo','fp.type.spot':'Bodové svítidlo','fp.type.junction_box':'Rozbočovací krabice','fp.type.panel':'Rozvaděč','fp.type.meter':'Elektroměr','fp.type.fan':'Ventilátor','fp.type.bell':'Zvonek','fp.type.tv_outlet':'TV zásuvka','fp.type.data_outlet':'Síťová/LAN zásuvka','fp.symbolSize.title':'Velikost ikon značek','block.add':'Přidat blok','block.remove':'Odebrat blok','block.pickTitle':'Přidat blok','block.materials.desc':'Seznam položek s cenami a součtem','block.floorplan.desc':'Stěny a elektrické značky','fp.mode.dimensions':'Rozměry','fp.hint.dimensions':'Klepněte na první bod, poté na druhý — objeví se pole pro zadání vzdálenosti. Můžete měřit stěny nebo vzdálenost k libovolnému objektu.','fp.dim.modalTitle':'Rozměr','fp.dim.label':'Hodnota','fp.dim.placeholder':'Např.: 3,2 m','fp.dimSize.title':'Velikost popisků rozměrů'
     },
     pl:{
       'brand.name':'Rozdzielnia','app.tagline':'Oznaczanie rozdzielnic elektrycznych','list.title':'Projekty',
@@ -946,7 +1908,7 @@
       'toast.storageUnavailable':'Magazyn niedostępny — sprawdź połączenie z Supabase','toast.sbNotConfigured':'Wpisz SUPABASE_URL i SUPABASE_ANON_KEY w kodzie strony, aby włączyć zapisywanie',
       'toast.sbSaveFailed':'Nie udało się zapisać w Supabase — sprawdź połączenie','toast.pdfPhotoFailed':'Nie udało się wczytać zdjęcia do PDF',
       'toast.sbLibFailed':'Nie udało się wczytać biblioteki Supabase. Sprawdź połączenie z internetem i odśwież stronę.',
-      'print.noMarkers':'Brak znaczników.','editor.subtitle':'Edycja rozdzielnicy','project.untitled':'Bez nazwy','photo.add':'Dodaj zdjęcie','confirm.deletePhoto.title':'Usunąć to zdjęcie?','confirm.deletePhoto.text':'Zdjęcie i wszystkie jego znaczniki zostaną trwale usunięte.'
+      'print.noMarkers':'Brak znaczników.','editor.subtitle':'Edycja rozdzielnicy','project.untitled':'Bez nazwy','photo.add':'Dodaj zdjęcie','confirm.deletePhoto.title':'Usunąć to zdjęcie?','confirm.deletePhoto.text':'Zdjęcie i wszystkie jego znaczniki zostaną trwale usunięte.','materials.heading':'Materiały','materials.col.name':'Nazwa','materials.col.qty':'Ilość','materials.col.price':'Cena','materials.col.sum':'Suma','materials.empty':'Lista jest pusta. Dodaj pierwszą pozycję.','materials.addRow':'+ Dodaj pozycję','materials.total':'Razem','materials.namePlaceholder':'Np.: Wyłącznik 16A','fp.heading':'Rzut pomieszczenia','fp.mode.walls':'Ściany','fp.mode.symbols':'Symbole','fp.undo':'Cofnij punkt','fp.finish':'Zakończ kontur','fp.clear':'Wyczyść wszystko','fp.hint.walls':'Dotykaj kolejno narożników pomieszczenia — linie połączą się automatycznie. Aby zamknąć kontur, dotknij blisko pierwszego punktu.','fp.hint.symbols':'Wybierz symbol poniżej i dotknij planu, aby go umieścić. Przeciągnij, aby przesunąć.','fp.confirmClear.title':'Wyczyścić plan?','fp.confirmClear.text':'Wszystkie ściany i symbole na planie zostaną trwale usunięte.','fp.symbol.noteLabel':'Notatka (opcjonalnie)','fp.type.socket':'Gniazdko','fp.type.socket_double':'Gniazdko podwójne','fp.type.socket_grounded':'Gniazdko z uziemieniem','fp.type.socket_waterproof':'Gniazdko wodoszczelne','fp.type.socket_3phase':'Gniazdo siłowe (trójfazowe)','fp.type.switch_1':'Włącznik pojedynczy','fp.type.switch_2':'Włącznik podwójny','fp.type.switch_pass':'Łącznik schodowy','fp.type.dimmer':'Ściemniacz','fp.type.light':'Oprawa oświetleniowa','fp.type.chandelier':'Żyrandol','fp.type.sconce':'Kinkiet','fp.type.spot':'Oczko halogenowe','fp.type.junction_box':'Puszka rozgałęźna','fp.type.panel':'Rozdzielnica','fp.type.meter':'Licznik energii','fp.type.fan':'Wentylator','fp.type.bell':'Dzwonek','fp.type.tv_outlet':'Gniazdo TV','fp.type.data_outlet':'Gniazdo sieciowe/LAN','fp.symbolSize.title':'Rozmiar ikon symboli','block.add':'Dodaj blok','block.remove':'Usuń blok','block.pickTitle':'Dodaj blok','block.materials.desc':'Lista pozycji z cenami i sumą','block.floorplan.desc':'Ściany i symbole elektryczne','fp.mode.dimensions':'Wymiary','fp.hint.dimensions':'Dotknij pierwszego punktu, a potem drugiego — pojawi się pole do wpisania odległości. Możesz mierzyć ściany lub odległość do dowolnego obiektu.','fp.dim.modalTitle':'Wymiar','fp.dim.label':'Wartość','fp.dim.placeholder':'Np.: 3,2 m','fp.dimSize.title':'Rozmiar etykiet wymiarów'
     }
   };
   let currentLang = 'ru';
@@ -977,6 +1939,9 @@
     if(currentProject && !viewEditor.hidden){
       updateStageHint();
       renderMarkerList();
+      renderMaterials();
+      renderSymbolPalette();
+      fpHint.textContent = fpMode === 'wall' ? t('fp.hint.walls') : fpMode === 'symbol' ? t('fp.hint.symbols') : t('fp.hint.dimensions');
       editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + activePhoto().markers.length;
     }
     if(!viewList.hidden){ renderProjectGrid(); }
@@ -1030,11 +1995,22 @@
       // Legacy single-photo project — migrate into the new photos array shape.
       photos = [{ id: row.id + '-legacy', image: row.image_url, thumb: row.thumb_url, markers: row.markers || [] }];
     }
+    const fp = row.floorplan && typeof row.floorplan === 'object' ? row.floorplan : {walls:[], symbols:[], dimensions:[]};
     return {
       id: row.id, name: row.name,
       createdAt: row.created_at, updatedAt: row.updated_at,
       pinSize: row.pin_size || 13,
-      photos: photos
+      symbolSize: row.symbol_size || 100,
+      dimSize: row.dim_size || 100,
+      hasMaterials: typeof row.has_materials === 'boolean' ? row.has_materials : ((row.materials||[]).length > 0),
+      hasFloorplan: typeof row.has_floorplan === 'boolean' ? row.has_floorplan : (((row.floorplan&&row.floorplan.walls)||[]).length > 0 || ((row.floorplan&&row.floorplan.symbols)||[]).length > 0 || ((row.floorplan&&row.floorplan.dimensions)||[]).length > 0),
+      photos: photos,
+      materials: Array.isArray(row.materials) ? row.materials : [],
+      floorplan: {
+        walls: Array.isArray(fp.walls) ? fp.walls : [],
+        symbols: Array.isArray(fp.symbols) ? fp.symbols : [],
+        dimensions: Array.isArray(fp.dimensions) ? fp.dimensions : []
+      }
     };
   }
   function projectToRow(p){
@@ -1043,7 +2019,13 @@
       id: p.id, name: p.name,
       created_at: p.createdAt, updated_at: p.updatedAt,
       pin_size: p.pinSize || 13,
+      symbol_size: p.symbolSize || 100,
+      dim_size: p.dimSize || 100,
+      has_materials: !!p.hasMaterials,
+      has_floorplan: !!p.hasFloorplan,
       photos: p.photos || [],
+      materials: p.materials || [],
+      floorplan: p.floorplan || {walls:[], symbols:[], dimensions:[]},
       thumb_url: cover ? cover.thumb : null,
       image_url: cover ? cover.image : null
     };
@@ -1151,6 +2133,14 @@
 
   function showEditor(project){
     currentProject = project;
+    if(!Array.isArray(currentProject.materials)) currentProject.materials = [];
+    if(typeof currentProject.hasMaterials !== 'boolean'){
+      currentProject.hasMaterials = currentProject.materials.length > 0;
+    }
+    if(typeof currentProject.hasFloorplan !== 'boolean'){
+      const fp = currentProject.floorplan || {walls:[], symbols:[], dimensions:[]};
+      currentProject.hasFloorplan = (fp.walls||[]).length > 0 || (fp.symbols||[]).length > 0 || (fp.dimensions||[]).length > 0;
+    }
     currentPhotoIndex = 0;
     viewList.hidden = true;
     viewEditor.hidden = false;
@@ -1161,8 +2151,28 @@
     brandSub.textContent = t('editor.subtitle');
     projectNameInput.value = project.name;
     applyPinSize(project.pinSize || 13);
+    symbolSizeRange.value = project.symbolSize || 100;
+    symbolSizeValue.textContent = (project.symbolSize || 100) + '%';
+    dimSizeRange.value = project.dimSize || 100;
+    dimSizeValue.textContent = (project.dimSize || 100) + '%';
     renderPhotoStrip();
     loadActivePhoto();
+    renderMaterials();
+    ensureFloorplan();
+    fpDraft = [];
+    setFpMode('wall');
+    renderSymbolPalette();
+    renderFloorplan();
+    updateBlockVisibility();
+  }
+
+  function updateBlockVisibility(){
+    if(!currentProject) return;
+    materialsSection.hidden = !currentProject.hasMaterials;
+    floorplanSection.hidden = !currentProject.hasFloorplan;
+    addBlockRow.hidden = currentProject.hasMaterials && currentProject.hasFloorplan;
+    choiceAddMaterials.hidden = currentProject.hasMaterials;
+    choiceAddFloorplan.hidden = currentProject.hasFloorplan;
   }
 
   function loadActivePhoto(){
@@ -1404,8 +2414,11 @@
     }
 
     const full = {
-      id, name, createdAt: now, updatedAt: now, pinSize: 13,
-      photos: [{ id: photoId, image: fullUrl, thumb: thumbUrl, markers: [] }]
+      id, name, createdAt: now, updatedAt: now, pinSize: 13, symbolSize: 100, dimSize: 100,
+      hasMaterials: false, hasFloorplan: false,
+      photos: [{ id: photoId, image: fullUrl, thumb: thumbUrl, markers: [] }],
+      materials: [],
+      floorplan: {walls:[], symbols:[], dimensions:[]}
     };
     btnCreateProject.textContent = t('btn.saving');
     currentProject = full;
@@ -1763,6 +2776,58 @@
             </div>
           </div>`;
         }).join('');
+      }
+
+      const materials = currentProject.materials || [];
+      const printMaterialsSection = el('printMaterialsSection');
+      const printMaterialsTable = el('printMaterialsTable');
+      if(materials.length === 0){
+        printMaterialsSection.style.display = 'none';
+      }else{
+        printMaterialsSection.style.display = '';
+        let total = 0;
+        const rowsHtml = materials.map(item=>{
+          const qty = parseFloat(item.qty) || 0;
+          const price = parseFloat(item.price) || 0;
+          const sum = qty * price;
+          total += sum;
+          return `<tr>
+            <td>${escapeHtml(item.name || '')}</td>
+            <td class="num">${fmtMoney(qty)}</td>
+            <td class="num">${fmtMoney(price)}</td>
+            <td class="num">${fmtMoney(sum)}</td>
+          </tr>`;
+        }).join('');
+        printMaterialsTable.innerHTML = `
+          <thead><tr>
+            <th>${escapeHtml(t('materials.col.name'))}</th>
+            <th>${escapeHtml(t('materials.col.qty'))}</th>
+            <th>${escapeHtml(t('materials.col.price'))}</th>
+            <th>${escapeHtml(t('materials.col.sum'))}</th>
+          </tr></thead>
+          <tbody>${rowsHtml}</tbody>
+          <tfoot><tr>
+            <td colspan="3">${escapeHtml(t('materials.total'))}</td>
+            <td class="num">${fmtMoney(total)}</td>
+          </tr></tfoot>`;
+      }
+
+      ensureFloorplan();
+      const printFloorplanSection = el('printFloorplanSection');
+      const printFloorplanSvgWrap = el('printFloorplanSvgWrap');
+      const printFloorplanLegend = el('printFloorplanLegend');
+      const fp = currentProject.floorplan;
+      if((fp.walls||[]).length === 0 && (fp.symbols||[]).length === 0){
+        printFloorplanSection.style.display = 'none';
+      }else{
+        printFloorplanSection.style.display = '';
+        printFloorplanSvgWrap.innerHTML = floorplanSvg.outerHTML;
+        const usedTypes = [...new Set((fp.symbols||[]).map(s=>s.type))];
+        printFloorplanLegend.innerHTML = usedTypes.map(type=>`
+          <div class="legend-item">
+            <span class="legend-swatch">${symbolIconSvg(type)}</span>
+            <span>${escapeHtml(t('fp.type.'+type))}</span>
+          </div>`).join('');
       }
 
       setTimeout(()=>window.print(), 100);
