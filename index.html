@@ -476,8 +476,8 @@
   #floorplanSvg{width:100%; height:auto; display:block; aspect-ratio:4/3; touch-action:none; cursor:crosshair;}
   .fp-wall{fill:none; stroke:var(--text); stroke-width:0.6; stroke-linejoin:round; stroke-linecap:round;}
   .fp-wall-preview{fill:none; stroke:var(--amber); stroke-width:0.5; stroke-dasharray:1.5 1; opacity:0.8;}
-  .fp-vertex{fill:var(--amber); stroke:var(--bg); stroke-width:0.3;}
-  .fp-vertex-start{fill:var(--teal);}
+  .fp-vertex line{stroke:var(--amber); stroke-width:0.22;}
+  .fp-vertex-start line{stroke:var(--teal);}
   .fp-symbol{cursor:grab;}
   .fp-symbol.dragging{cursor:grabbing;}
   .fp-symbol circle.sym-bg{fill:var(--bg-elev-2); stroke:var(--amber); stroke-width:0.4;}
@@ -488,9 +488,7 @@
   .fp-dim-label-bg{fill:var(--bg); stroke:var(--teal); stroke-width:0.15;}
   .fp-dim-label{font-size:1.68px; fill:var(--teal); font-family:ui-sans-serif,sans-serif; font-weight:600; text-anchor:middle; dominant-baseline:middle;}
   .fp-dim-hit{stroke:transparent; stroke-width:2.5; cursor:pointer;}
-  .fp-dim-draft-point{fill:var(--teal); stroke:var(--bg); stroke-width:0.3;}
-  .fp-dim-handle{fill:var(--teal); stroke:var(--bg); stroke-width:0.3; opacity:0; pointer-events:none;}
-  #floorplanSvg.fp-mode-dim .fp-dim-handle{opacity:1; pointer-events:auto; cursor:grab; touch-action:none;}
+  .fp-dim-draft-point line{stroke:var(--teal); stroke-width:0.22;}
   #floorplanSvg.fp-mode-dim .fp-dim-hit{cursor:grab; touch-action:none;}
 
   .marker-row{
@@ -577,6 +575,25 @@
     opacity:0; pointer-events:none; transition:opacity .2s, transform .2s;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+
+  .magnifier{
+    position:fixed; width:110px; height:110px; border-radius:50%;
+    border:3px solid var(--amber); overflow:hidden;
+    pointer-events:none; z-index:500; background:#111;
+    box-shadow:0 6px 20px rgba(0,0,0,0.55);
+  }
+  .magnifier[hidden]{display:none;}
+  .magnifier-img{position:absolute; inset:0; background-repeat:no-repeat;}
+  .magnifier-svg{position:absolute; inset:0; width:100%; height:100%; display:none;}
+  .magnifier-crosshair{
+    position:absolute; top:50%; left:50%; width:16px; height:16px; margin:-8px;
+    border:1.5px solid var(--amber); border-radius:50%;
+  }
+  .magnifier-crosshair::before, .magnifier-crosshair::after{
+    content:''; position:absolute; background:var(--amber);
+  }
+  .magnifier-crosshair::before{left:50%; top:-5px; bottom:-5px; width:1px; margin-left:-0.5px;}
+  .magnifier-crosshair::after{top:50%; left:-5px; right:-5px; height:1px; margin-top:-0.5px;}
 
   .top-scoped{max-width:1100px; margin:0 auto; width:100%;}
 
@@ -940,6 +957,12 @@
 
 <div class="toast" id="toast"></div>
 
+<div id="magnifier" class="magnifier" hidden>
+  <div id="magnifierImg" class="magnifier-img"></div>
+  <svg id="magnifierSvg" class="magnifier-svg" preserveAspectRatio="xMidYMid slice"></svg>
+  <div class="magnifier-crosshair"></div>
+</div>
+
 <div id="printArea">
   <h1 id="printTitle"></h1>
   <p id="printMeta"></p>
@@ -1027,6 +1050,9 @@
   const symbolPalette = el('symbolPalette');
   const fpHint = el('fpHint');
   const floorplanSvg = el('floorplanSvg');
+  const magnifier = el('magnifier');
+  const magnifierImg = el('magnifierImg');
+  const magnifierSvg = el('magnifierSvg');
   const markerList = el('markerList');
   const markerCountLabel = el('markerCountLabel');
   const modeToggle = el('modeToggle');
@@ -1347,10 +1373,12 @@
         floorplanSvg.appendChild(svgEl('polyline', {class:'fp-wall-preview', points: toViewboxPoints(fpDraft)}));
       }
       fpDraft.forEach((p, i)=>{
-        floorplanSvg.appendChild(svgEl('circle', {
-          class: i === 0 ? 'fp-vertex fp-vertex-start' : 'fp-vertex',
-          cx: p.x, cy: p.y*0.75, r: 0.9
-        }));
+        const cx = p.x, cy = p.y*0.75;
+        const cls = i === 0 ? 'fp-vertex fp-vertex-start' : 'fp-vertex';
+        const g = svgEl('g', {class:cls});
+        g.appendChild(svgEl('line', {x1:cx-0.9, y1:cy, x2:cx+0.9, y2:cy}));
+        g.appendChild(svgEl('line', {x1:cx, y1:cy-0.9, x2:cx, y2:cy+0.9}));
+        floorplanSvg.appendChild(g);
       });
     }
 
@@ -1401,9 +1429,11 @@
     });
 
     if(fpMode === 'dim' && fpDimDraftStart){
-      floorplanSvg.appendChild(svgEl('circle', {
-        class:'fp-dim-draft-point', cx: fpDimDraftStart.x, cy: fpDimDraftStart.y*0.75, r: 1
-      }));
+      const cx = fpDimDraftStart.x, cy = fpDimDraftStart.y*0.75;
+      const g = svgEl('g', {class:'fp-dim-draft-point'});
+      g.appendChild(svgEl('line', {x1:cx-0.9, y1:cy, x2:cx+0.9, y2:cy}));
+      g.appendChild(svgEl('line', {x1:cx, y1:cy-0.9, x2:cx, y2:cy+0.9}));
+      floorplanSvg.appendChild(g);
     }
   }
 
@@ -1429,10 +1459,17 @@
     py = Math.max(0.5, Math.min(99.5, py));
 
     if(fpMode === 'wall'){
-      if(fpDraft.length > 0){
+      const wv = snapPointToWalls(px, py);
+      const wasWallVertexSnapped = (wv.x !== px || wv.y !== py);
+      px = wv.x; py = wv.y;
+      if(!wasWallVertexSnapped && fpDraft.length > 0){
         const prev = fpDraft[fpDraft.length-1];
         const dx = px - prev.x, dy = py - prev.y;
-        if(Math.abs(dx) > Math.abs(dy)) py = prev.y; else px = prev.x;
+        // px is % of width, py is % of height — the plan isn't square (4:3),
+        // so compare real on-screen distances, not raw percentages.
+        const realDx = Math.abs(dx) * rect.width;
+        const realDy = Math.abs(dy) * rect.height;
+        if(realDx > realDy) py = prev.y; else px = prev.x;
       }
       if(fpDraft.length >= 2){
         const start = fpDraft[0];
@@ -1464,7 +1501,9 @@
       }else{
         if(!wasVertexSnapped){
           const dx = px - fpDimDraftStart.x, dy = py - fpDimDraftStart.y;
-          if(Math.abs(dx) > Math.abs(dy)) py = fpDimDraftStart.y; else px = fpDimDraftStart.x;
+          const realDx = Math.abs(dx) * rect.width;
+          const realDy = Math.abs(dy) * rect.height;
+          if(realDx > realDy) py = fpDimDraftStart.y; else px = fpDimDraftStart.x;
         }
         fpPendingDim = {id: uid(), x1: fpDimDraftStart.x, y1: fpDimDraftStart.y, x2: px, y2: py, label: ''};
         fpDimDraftStart = null;
@@ -1510,41 +1549,6 @@
       scheduleFloorplanSave();
     });
   });
-
-  function attachDimEndpointDrag(handle, dim, xKey, yKey){
-    let startX, startY, moved = false;
-    handle.addEventListener('pointerdown', (ev)=>{
-      ev.stopPropagation();
-      startX = ev.clientX; startY = ev.clientY; moved = false;
-
-      function onMove(e){
-        const dx0 = e.clientX - startX, dy0 = e.clientY - startY;
-        if(!moved && Math.hypot(dx0,dy0) > 5) moved = true;
-        if(!moved) return;
-        const rect = floorplanSvg.getBoundingClientRect();
-        if(rect.width === 0) return;
-        let px = ((e.clientX - rect.left) / rect.width) * 100;
-        let py = ((e.clientY - rect.top) / rect.height) * 100;
-        px = Math.max(0.5, Math.min(99.5, px));
-        py = Math.max(0.5, Math.min(99.5, py));
-        const snapped = snapPointToWalls(px, py);
-        dim[xKey] = snapped.x;
-        dim[yKey] = snapped.y;
-        renderFloorplan();
-      }
-      function onUp(){
-        document.removeEventListener('pointermove', onMove);
-        document.removeEventListener('pointerup', onUp);
-        if(moved){
-          fpDimJustDragged = true;
-          renderFloorplan();
-          scheduleFloorplanSave();
-        }
-      }
-      document.addEventListener('pointermove', onMove);
-      document.addEventListener('pointerup', onUp);
-    });
-  }
 
   function attachDimLineDrag(hitLine, dim){
     let startX, startY, moved = false;
@@ -2594,6 +2598,62 @@
       markerList.appendChild(row);
     });
   }
+
+  /* ---------------- Magnifier (touch precision aid) ---------------- */
+  function positionMagnifier(clientX, clientY){
+    const size = 110, gap = 26;
+    let left = clientX - size/2;
+    let top = clientY - size - gap;
+    if(top < 8) top = clientY + gap;
+    left = Math.max(6, Math.min(window.innerWidth - size - 6, left));
+    top = Math.max(6, Math.min(window.innerHeight - size - 6, top));
+    magnifier.style.left = left + 'px';
+    magnifier.style.top = top + 'px';
+    magnifier.hidden = false;
+  }
+  function showMagnifierForImage(clientX, clientY){
+    const rect = stageImage.getBoundingClientRect();
+    if(rect.width === 0 || !stageImage.src) return;
+    magnifierImg.style.display = 'block';
+    magnifierSvg.style.display = 'none';
+    const zoom = 2.4;
+    const relX = clientX - rect.left, relY = clientY - rect.top;
+    magnifierImg.style.backgroundImage = `url("${stageImage.src}")`;
+    magnifierImg.style.backgroundSize = `${rect.width*zoom}px ${rect.height*zoom}px`;
+    magnifierImg.style.backgroundPosition = `${-(relX*zoom - 55)}px ${-(relY*zoom - 55)}px`;
+    positionMagnifier(clientX, clientY);
+  }
+  function showMagnifierForFloorplan(clientX, clientY){
+    const rect = floorplanSvg.getBoundingClientRect();
+    if(rect.width === 0) return;
+    magnifierSvg.style.display = 'block';
+    magnifierImg.style.display = 'none';
+    const px = ((clientX - rect.left) / rect.width) * 100;
+    const py = ((clientY - rect.top) / rect.height) * 75;
+    const halfW = 7, halfH = 5.25;
+    magnifierSvg.setAttribute('viewBox', `${px-halfW} ${py-halfH} ${halfW*2} ${halfH*2}`);
+    magnifierSvg.innerHTML = floorplanSvg.innerHTML;
+    positionMagnifier(clientX, clientY);
+  }
+  function hideMagnifier(){ magnifier.hidden = true; }
+
+  function wireMagnifier(container, showFn){
+    let active = false;
+    container.addEventListener('pointerdown', (ev)=>{
+      if(ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
+      active = true;
+      showFn(ev.clientX, ev.clientY);
+    }, {capture:true});
+    container.addEventListener('pointermove', (ev)=>{
+      if(!active) return;
+      showFn(ev.clientX, ev.clientY);
+    }, {capture:true});
+    const stop = ()=>{ active = false; hideMagnifier(); };
+    document.addEventListener('pointerup', stop);
+    document.addEventListener('pointercancel', stop);
+  }
+  wireMagnifier(imageStage, showMagnifierForImage);
+  wireMagnifier(floorplanSvg, showMagnifierForFloorplan);
 
   imageStage.addEventListener('click', (ev)=>{
     if(!currentProject) return;
