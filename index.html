@@ -2638,19 +2638,18 @@
   function hideMagnifier(){ magnifier.hidden = true; }
 
   function wireMagnifier(container, showFn){
-    let active = false;
-    container.addEventListener('pointerdown', (ev)=>{
-      if(ev.pointerType !== 'touch' && ev.pointerType !== 'pen') return;
-      active = true;
-      showFn(ev.clientX, ev.clientY);
-    }, {capture:true});
-    container.addEventListener('pointermove', (ev)=>{
-      if(!active) return;
-      showFn(ev.clientX, ev.clientY);
-    }, {capture:true});
-    const stop = ()=>{ active = false; hideMagnifier(); };
-    document.addEventListener('pointerup', stop);
-    document.addEventListener('pointercancel', stop);
+    container.addEventListener('touchstart', (ev)=>{
+      if(!ev.touches || ev.touches.length !== 1) return;
+      const t = ev.touches[0];
+      showFn(t.clientX, t.clientY);
+    }, {passive:true});
+    container.addEventListener('touchmove', (ev)=>{
+      if(!ev.touches || ev.touches.length !== 1) return;
+      const t = ev.touches[0];
+      showFn(t.clientX, t.clientY);
+    }, {passive:true});
+    container.addEventListener('touchend', hideMagnifier, {passive:true});
+    container.addEventListener('touchcancel', hideMagnifier, {passive:true});
   }
   wireMagnifier(imageStage, showMagnifierForImage);
   wireMagnifier(floorplanSvg, showMagnifierForFloorplan);
