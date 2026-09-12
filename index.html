@@ -1448,13 +1448,14 @@
     return best ? {x: best.x, y: best.y} : {x: px, y: py};
   }
 
-  floorplanSvg.addEventListener('click', (ev)=>{
+  function handleFloorplanTap(clientX, clientY, targetEl){
     if(!currentProject) return;
     if(fpSymbolJustDragged){ fpSymbolJustDragged = false; return; }
+    if(fpDimJustDragged){ fpDimJustDragged = false; return; }
     const rect = floorplanSvg.getBoundingClientRect();
     if(rect.width === 0) return;
-    let px = ((ev.clientX - rect.left) / rect.width) * 100;
-    let py = ((ev.clientY - rect.top) / rect.height) * 100;
+    let px = ((clientX - rect.left) / rect.width) * 100;
+    let py = ((clientY - rect.top) / rect.height) * 100;
     px = Math.max(0.5, Math.min(99.5, px));
     py = Math.max(0.5, Math.min(99.5, py));
 
@@ -1486,12 +1487,12 @@
       fpDraft.push({x: px, y: py});
       renderFloorplan();
     }else if(fpMode === 'symbol'){
-      if(ev.target !== floorplanSvg && ev.target.closest && ev.target.closest('.fp-symbol')) return;
+      if(targetEl !== floorplanSvg && targetEl && targetEl.closest && targetEl.closest('.fp-symbol')) return;
       currentProject.floorplan.symbols.push({id: uid(), type: fpSelectedSymbolType, x: px, y: py, note: ''});
       renderFloorplan();
       scheduleFloorplanSave();
     }else if(fpMode === 'dim'){
-      if(ev.target !== floorplanSvg && ev.target.closest && ev.target.closest('.fp-dim')) return;
+      if(targetEl !== floorplanSvg && targetEl && targetEl.closest && targetEl.closest('.fp-dim')) return;
       const vs = snapPointToWalls(px, py);
       const wasVertexSnapped = (vs.x !== px || vs.y !== py);
       px = vs.x; py = vs.y;
@@ -1514,7 +1515,8 @@
         setTimeout(()=>dimLabelInput.focus(), 50);
       }
     }
-  });
+  }
+  setupReliableTap(floorplanSvg, handleFloorplanTap, '.fp-symbol, .fp-dim');
 
   fpUndoBtn.addEventListener('click', ()=>{
     if(!currentProject) return;
@@ -2654,18 +2656,45 @@
   wireMagnifier(imageStage, showMagnifierForImage);
   wireMagnifier(floorplanSvg, showMagnifierForFloorplan);
 
-  imageStage.addEventListener('click', (ev)=>{
+  function setupReliableTap(container, handler, ignoreSelector){
+    let startPos = null, startTarget = null;
+    container.addEventListener('touchstart', (ev)=>{
+      if(!ev.touches || ev.touches.length !== 1){ startPos = null; return; }
+      startPos = {x: ev.touches[0].clientX, y: ev.touches[0].clientY};
+      startTarget = ev.target;
+    }, {passive:true});
+    container.addEventListener('touchend', (ev)=>{
+      if(!startPos) return;
+      const pos = startPos, target = startTarget;
+      startPos = null; startTarget = null;
+      if(ignoreSelector && target && target.closest && target.closest(ignoreSelector)) return;
+      const t = ev.changedTouches[0];
+      const dist = Math.hypot(t.clientX - pos.x, t.clientY - pos.y);
+      if(dist > 10) return; // finger moved — treat as scroll/drag, not a tap
+      ev.preventDefault(); // stop the browser's own synthetic click (avoids double placement,
+                            // and placement no longer depends on click, which mobile browsers
+                            // can suppress after a long hold)
+      handler(t.clientX, t.clientY, target);
+    }, {passive:false});
+    container.addEventListener('click', (ev)=>{
+      if(ignoreSelector && ev.target && ev.target.closest && ev.target.closest(ignoreSelector)) return;
+      handler(ev.clientX, ev.clientY, ev.target);
+    });
+  }
+
+  function handleImageStageTap(clientX, clientY){
     if(!currentProject) return;
     if(editorMode === 'view'){ hideMarkerInfoPopup(); return; }
     const rect = stageImage.getBoundingClientRect();
     if(rect.width === 0) return;
-    const x = ((ev.clientX - rect.left) / rect.width) * 100;
-    const y = ((ev.clientY - rect.top) / rect.height) * 100;
+    const x = ((clientX - rect.left) / rect.width) * 100;
+    const y = ((clientY - rect.top) / rect.height) * 100;
     if(x < 0 || x > 100 || y < 0 || y > 100) return;
     pendingMarkerCoords = {x: Math.max(1,Math.min(99,x)), y: Math.max(1,Math.min(99,y))};
     placeDraftPin(pendingMarkerCoords);
     openMarkerModal(null);
-  });
+  }
+  setupReliableTap(imageStage, handleImageStageTap, '.pin, .marker-info-popup');
 
   function placeDraftPin(coords){
     removeDraftPin();
