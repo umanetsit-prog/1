@@ -1510,10 +1510,11 @@
     }
   }
 
-  function snapPointToWalls(px, py){
+  function snapPointToWalls(px, py, exclude){
     let best = null, bestDist = 2.2; // snap radius, viewbox units
     (currentProject.floorplan.walls||[]).forEach(wall=>{
       wall.forEach(pt=>{
+        if(exclude && exclude.indexOf(pt) !== -1) return;
         const d = Math.hypot(pt.x-px, pt.y-py);
         if(d < bestDist){ bestDist = d; best = pt; }
       });
@@ -1666,18 +1667,28 @@
         if(pointIdx < wall.length - 1) neighborIdxs.push(pointIdx + 1);
       }
       // for each neighbor, remember whether that wall segment was horizontal
-      // (shared y) or vertical (shared x), so dragging keeps it that way
+      // (shared y) or vertical (shared x) — while dragging, that neighbor's
+      // matching coordinate follows along so the segment stays straight
       const axisLocks = neighborIdxs.filter(i=>i!==pointIdx).map(i=>{
         const n = wall[i];
         const dxo = Math.abs(origin.x - n.x), dyo = Math.abs(origin.y - n.y);
-        return dyo < dxo ? {axis:'y', value:n.y} : {axis:'x', value:n.x};
+        return dyo < dxo ? {axis:'y', idx:i} : {axis:'x', idx:i};
       });
+      const selfPoints = [wall[pointIdx]];
+      if(isClosed && pointIdx === 0) selfPoints.push(wall[wall.length-1]);
+      if(isClosed && pointIdx === wall.length-1) selfPoints.push(wall[0]);
 
+      function setPoint(idx, px, py){
+        wall[idx].x = px; wall[idx].y = py;
+        if(isClosed && idx === 0){ wall[wall.length-1].x = px; wall[wall.length-1].y = py; }
+        if(isClosed && idx === wall.length-1){ wall[0].x = px; wall[0].y = py; }
+      }
       function applyPoint(px, py){
-        wall[pointIdx].x = px; wall[pointIdx].y = py;
-        // keep a closed loop's start/end points together
-        if(isClosed && pointIdx === 0) { wall[wall.length-1].x = px; wall[wall.length-1].y = py; }
-        if(isClosed && pointIdx === wall.length-1) { wall[0].x = px; wall[0].y = py; }
+        setPoint(pointIdx, px, py);
+        axisLocks.forEach(lock=>{
+          if(lock.axis === 'y') setPoint(lock.idx, wall[lock.idx].x, py);
+          else setPoint(lock.idx, px, wall[lock.idx].y);
+        });
         renderFloorplan();
       }
       function onMove(e){
@@ -1698,10 +1709,7 @@
           return;
         }
         const gridded = snapToGrid(px, py);
-        px = gridded.x; py = gridded.y;
-        // keep both adjacent walls perfectly straight relative to their other end
-        axisLocks.forEach(lock=>{ if(lock.axis === 'y') py = lock.value; else px = lock.value; });
-        const snapped = snapPointToWalls(px, py);
+        const snapped = snapPointToWalls(gridded.x, gridded.y, selfPoints);
         applyPoint(snapped.x, snapped.y);
       }
       function finish(){
