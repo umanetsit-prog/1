@@ -1199,8 +1199,8 @@
       row.className = 'materials-row';
       row.innerHTML = `
         <input type="text" class="mat-name" value="${escapeAttr(item.name || '')}" placeholder="${escapeAttr(t('materials.namePlaceholder'))}">
-        <input type="number" class="mat-qty" value="${qty}" min="0" step="any" inputmode="decimal">
-        <input type="number" class="mat-price" value="${price}" min="0" step="any" inputmode="decimal">
+        <input type="number" class="mat-qty" value="${escapeAttr(item.qty == null ? '' : item.qty)}" min="0" step="any" inputmode="decimal">
+        <input type="number" class="mat-price" value="${escapeAttr(item.price == null ? '' : item.price)}" min="0" step="any" inputmode="decimal">
         <span class="materials-row-sum">${fmtMoney(sum)}</span>
         <button type="button" class="materials-row-del" title="${escapeAttr(t('btn.delete'))}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/></svg>
@@ -1247,7 +1247,7 @@
   btnAddMaterial.addEventListener('click', ()=>{
     if(!currentProject) return;
     if(!Array.isArray(currentProject.materials)) currentProject.materials = [];
-    currentProject.materials.push({id: uid(), name:'', qty:1, price:0});
+    currentProject.materials.push({id: uid(), name:'', qty:'', price:''});
     renderMaterials();
     scheduleMaterialsSave();
     const inputs = materialsRows.querySelectorAll('.mat-name');
