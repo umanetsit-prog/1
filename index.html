@@ -313,11 +313,18 @@
   .floorplan-tab-add svg{width:16px; height:16px;}
 
   .image-stage{
-    position:relative; width:100%;
+    position:relative; width:100%; min-height:220px;
     background:var(--bg-elev); border:1px solid var(--border); border-radius:var(--radius-card);
     overflow:hidden; touch-action:manipulation; user-select:none; flex:1.5;
   }
   .image-stage img{width:100%; display:block; pointer-events:none;}
+  .photo-empty-state{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:12px; text-align:center; padding:20px; color:var(--text-dim);
+  }
+  .photo-empty-state[hidden]{display:none;}
+  .photo-empty-state svg{width:34px; height:34px; opacity:0.6;}
+  .photo-empty-state p{margin:0; font-size:13.5px;}
   .stage-hint{
     position:absolute; left:0; right:0; bottom:0;
     background:linear-gradient(0deg, rgba(0,0,0,0.55), transparent);
@@ -782,6 +789,11 @@
         <div class="image-stage" id="imageStage">
           <img id="stageImage" alt="Фото щита">
           <div class="stage-hint" id="stageHint">Нажмите на фото, чтобы поставить метку</div>
+          <div class="photo-empty-state" id="photoEmptyState" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="8" cy="10" r="1.4" fill="currentColor" stroke="none"/><path d="M13 12l3-3 4 5"/></svg>
+            <p data-i18n="photo.emptyState">В проекте пока нет фото</p>
+            <button type="button" class="primary-btn" id="btnPhotoEmptyAdd" data-i18n="photo.add">Добавить фото</button>
+          </div>
           <div class="align-guide" id="alignGuide" hidden></div>
           <div class="marker-info-popup" id="markerInfoPopup" hidden>
             <button class="popup-close" id="popupClose" type="button">&times;</button>
@@ -1069,6 +1081,8 @@
   const imageStage = el('imageStage');
   const stageImage = el('stageImage');
   const stageHint = el('stageHint');
+  const photoEmptyState = el('photoEmptyState');
+  const btnPhotoEmptyAdd = el('btnPhotoEmptyAdd');
   const alignGuide = el('alignGuide');
   const photoStrip = el('photoStrip');
   const addPhotoInput = el('addPhotoInput');
@@ -2066,7 +2080,7 @@
       'btn.uploadPhoto':'Загрузить фото','list.newTile':'Новый щит','mode.edit':'Редактор','mode.view':'Просмотр',
       'size.title':'Размер меток на фото','markers.heading':'Метки','markers.emptyPanel':'Меток пока нет. Нажмите на фото щита, чтобы отметить провод, модуль или автомат.',
       'fab.newProject':'Новый проект','modal.newProject.title':'Новый щит','field.name':'Название','placeholder.projectName':'Например: Щит квартиры, 3 этаж',
-      'field.photo':'Фото щита','upload.prompt':'Нажмите, чтобы выбрать фото','upload.processing':'Обработка фото…','upload.selected':'Фото выбрано — можно заменить','upload.error':'Не удалось обработать фото, попробуйте другое',
+      'field.photo':'Фото щита (необязательно)','upload.prompt':'Нажмите, чтобы выбрать фото','upload.processing':'Обработка фото…','upload.selected':'Фото выбрано — можно заменить','upload.error':'Не удалось обработать фото, попробуйте другое',
       'btn.cancel':'Отмена','btn.create':'Создать','btn.uploadingPhoto':'Загружаем фото…','btn.saving':'Сохраняем…',
       'marker.modal.newTitle':'Новая метка','marker.modal.editTitle':'Метка','field.type':'Тип','type.wire':'Провод','type.module':'Модуль','type.note':'Заметка',
       'field.label':'Обозначение','placeholder.markerLabel':'Например: L1, N, QF3','field.desc':'Описание','placeholder.markerDesc':'Например: фаза на розетки кухни, автомат 16А',
@@ -2090,7 +2104,7 @@
       'btn.uploadPhoto':'Завантажити фото','list.newTile':'Новий щит','mode.edit':'Редактор','mode.view':'Перегляд',
       'size.title':'Розмір міток на фото','markers.heading':'Мітки','markers.emptyPanel':'Міток поки немає. Натисніть на фото щита, щоб позначити провід, модуль або автомат.',
       'fab.newProject':'Новий проєкт','modal.newProject.title':'Новий щит','field.name':'Назва','placeholder.projectName':'Наприклад: Щит квартири, 3 поверх',
-      'field.photo':'Фото щита','upload.prompt':'Натисніть, щоб вибрати фото','upload.processing':'Обробка фото…','upload.selected':'Фото вибрано — можна замінити','upload.error':'Не вдалося обробити фото, спробуйте інше',
+      'field.photo':'Фото щита (необовʼязково)','upload.prompt':'Натисніть, щоб вибрати фото','upload.processing':'Обробка фото…','upload.selected':'Фото вибрано — можна замінити','upload.error':'Не вдалося обробити фото, спробуйте інше',
       'btn.cancel':'Скасувати','btn.create':'Створити','btn.uploadingPhoto':'Завантажуємо фото…','btn.saving':'Зберігаємо…',
       'marker.modal.newTitle':'Нова мітка','marker.modal.editTitle':'Мітка','field.type':'Тип','type.wire':'Провід','type.module':'Модуль','type.note':'Нотатка',
       'field.label':'Позначення','placeholder.markerLabel':'Наприклад: L1, N, QF3','field.desc':'Опис','placeholder.markerDesc':'Наприклад: фаза на розетки кухні, автомат 16А',
@@ -2114,7 +2128,7 @@
       'btn.uploadPhoto':'Upload photo','list.newTile':'New panel','mode.edit':'Edit','mode.view':'View',
       'size.title':'Marker size on photo','markers.heading':'Markers','markers.emptyPanel':'No markers yet. Tap the photo to mark a wire, module, or breaker.',
       'fab.newProject':'New project','modal.newProject.title':'New panel','field.name':'Name','placeholder.projectName':'E.g.: Apartment panel, 3rd floor',
-      'field.photo':'Panel photo','upload.prompt':'Tap to choose a photo','upload.processing':'Processing photo…','upload.selected':'Photo selected — tap to replace','upload.error':'Could not process the photo, try another one',
+      'field.photo':'Panel photo (optional)','upload.prompt':'Tap to choose a photo','upload.processing':'Processing photo…','upload.selected':'Photo selected — tap to replace','upload.error':'Could not process the photo, try another one',
       'btn.cancel':'Cancel','btn.create':'Create','btn.uploadingPhoto':'Uploading photo…','btn.saving':'Saving…',
       'marker.modal.newTitle':'New marker','marker.modal.editTitle':'Marker','field.type':'Type','type.wire':'Wire','type.module':'Module','type.note':'Note',
       'field.label':'Label','placeholder.markerLabel':'E.g.: L1, N, QF3','field.desc':'Description','placeholder.markerDesc':'E.g.: phase to kitchen outlets, 16A breaker',
@@ -2138,7 +2152,7 @@
       'btn.uploadPhoto':'Foto hochladen','list.newTile':'Neuer Verteiler','mode.edit':'Bearbeiten','mode.view':'Ansicht',
       'size.title':'Markierungsgröße auf dem Foto','markers.heading':'Markierungen','markers.emptyPanel':'Noch keine Markierungen. Tippen Sie auf das Foto, um eine Leitung, ein Modul oder einen Automaten zu markieren.',
       'fab.newProject':'Neues Projekt','modal.newProject.title':'Neuer Verteiler','field.name':'Name','placeholder.projectName':'Z. B.: Verteiler Wohnung, 3. Stock',
-      'field.photo':'Foto des Verteilers','upload.prompt':'Tippen, um ein Foto auszuwählen','upload.processing':'Foto wird verarbeitet…','upload.selected':'Foto ausgewählt — zum Ersetzen tippen','upload.error':'Foto konnte nicht verarbeitet werden, bitte ein anderes versuchen',
+      'field.photo':'Foto des Verteilers (optional)','upload.prompt':'Tippen, um ein Foto auszuwählen','upload.processing':'Foto wird verarbeitet…','upload.selected':'Foto ausgewählt — zum Ersetzen tippen','upload.error':'Foto konnte nicht verarbeitet werden, bitte ein anderes versuchen',
       'btn.cancel':'Abbrechen','btn.create':'Erstellen','btn.uploadingPhoto':'Foto wird hochgeladen…','btn.saving':'Wird gespeichert…',
       'marker.modal.newTitle':'Neue Markierung','marker.modal.editTitle':'Markierung','field.type':'Typ','type.wire':'Leitung','type.module':'Modul','type.note':'Notiz',
       'field.label':'Bezeichnung','placeholder.markerLabel':'Z. B.: L1, N, QF3','field.desc':'Beschreibung','placeholder.markerDesc':'Z. B.: Phase zu Küchensteckdosen, 16A-Automat',
@@ -2162,7 +2176,7 @@
       'btn.uploadPhoto':'Subir foto','list.newTile':'Nuevo cuadro','mode.edit':'Editar','mode.view':'Ver',
       'size.title':'Tamaño de los marcadores en la foto','markers.heading':'Marcadores','markers.emptyPanel':'Aún no hay marcadores. Toca la foto para marcar un cable, módulo o interruptor.',
       'fab.newProject':'Nuevo proyecto','modal.newProject.title':'Nuevo cuadro','field.name':'Nombre','placeholder.projectName':'Ej.: Cuadro del piso, 3ª planta',
-      'field.photo':'Foto del cuadro','upload.prompt':'Toca para elegir una foto','upload.processing':'Procesando foto…','upload.selected':'Foto seleccionada — toca para cambiarla','upload.error':'No se pudo procesar la foto, prueba con otra',
+      'field.photo':'Foto del cuadro (opcional)','upload.prompt':'Toca para elegir una foto','upload.processing':'Procesando foto…','upload.selected':'Foto seleccionada — toca para cambiarla','upload.error':'No se pudo procesar la foto, prueba con otra',
       'btn.cancel':'Cancelar','btn.create':'Crear','btn.uploadingPhoto':'Subiendo foto…','btn.saving':'Guardando…',
       'marker.modal.newTitle':'Nuevo marcador','marker.modal.editTitle':'Marcador','field.type':'Tipo','type.wire':'Cable','type.module':'Módulo','type.note':'Nota',
       'field.label':'Etiqueta','placeholder.markerLabel':'Ej.: L1, N, QF3','field.desc':'Descripción','placeholder.markerDesc':'Ej.: fase a enchufes de cocina, interruptor de 16A',
@@ -2186,7 +2200,7 @@
       'btn.uploadPhoto':'Carregar foto','list.newTile':'Novo quadro','mode.edit':'Editar','mode.view':'Ver',
       'size.title':'Tamanho dos marcadores na foto','markers.heading':'Marcadores','markers.emptyPanel':'Ainda não há marcadores. Toque na foto para marcar um fio, módulo ou disjuntor.',
       'fab.newProject':'Novo projeto','modal.newProject.title':'Novo quadro','field.name':'Nome','placeholder.projectName':'Ex.: Quadro do apartamento, 3º andar',
-      'field.photo':'Foto do quadro','upload.prompt':'Toque para escolher uma foto','upload.processing':'A processar a foto…','upload.selected':'Foto selecionada — toque para substituir','upload.error':'Não foi possível processar a foto, tente outra',
+      'field.photo':'Foto do quadro (opcional)','upload.prompt':'Toque para escolher uma foto','upload.processing':'A processar a foto…','upload.selected':'Foto selecionada — toque para substituir','upload.error':'Não foi possível processar a foto, tente outra',
       'btn.cancel':'Cancelar','btn.create':'Criar','btn.uploadingPhoto':'A carregar a foto…','btn.saving':'A guardar…',
       'marker.modal.newTitle':'Novo marcador','marker.modal.editTitle':'Marcador','field.type':'Tipo','type.wire':'Fio','type.module':'Módulo','type.note':'Nota',
       'field.label':'Etiqueta','placeholder.markerLabel':'Ex.: L1, N, QF3','field.desc':'Descrição','placeholder.markerDesc':'Ex.: fase para tomadas da cozinha, disjuntor de 16A',
@@ -2210,7 +2224,7 @@
       'btn.uploadPhoto':'Nahrát fotku','list.newTile':'Nový rozvaděč','mode.edit':'Úpravy','mode.view':'Prohlížení',
       'size.title':'Velikost značek na fotce','markers.heading':'Značky','markers.emptyPanel':'Zatím žádné značky. Klepněte na fotku a označte vodič, modul nebo jistič.',
       'fab.newProject':'Nový projekt','modal.newProject.title':'Nový rozvaděč','field.name':'Název','placeholder.projectName':'Např.: Rozvaděč byt, 3. patro',
-      'field.photo':'Fotka rozvaděče','upload.prompt':'Klepněte pro výběr fotky','upload.processing':'Zpracování fotky…','upload.selected':'Fotka vybrána — klepněte pro výměnu','upload.error':'Fotku se nepodařilo zpracovat, zkuste jinou',
+      'field.photo':'Fotka rozvaděče (nepovinné)','upload.prompt':'Klepněte pro výběr fotky','upload.processing':'Zpracování fotky…','upload.selected':'Fotka vybrána — klepněte pro výměnu','upload.error':'Fotku se nepodařilo zpracovat, zkuste jinou',
       'btn.cancel':'Zrušit','btn.create':'Vytvořit','btn.uploadingPhoto':'Nahrávání fotky…','btn.saving':'Ukládání…',
       'marker.modal.newTitle':'Nová značka','marker.modal.editTitle':'Značka','field.type':'Typ','type.wire':'Vodič','type.module':'Modul','type.note':'Poznámka',
       'field.label':'Označení','placeholder.markerLabel':'Např.: L1, N, QF3','field.desc':'Popis','placeholder.markerDesc':'Např.: fáze na zásuvky v kuchyni, jistič 16A',
@@ -2234,7 +2248,7 @@
       'btn.uploadPhoto':'Prześlij zdjęcie','list.newTile':'Nowa rozdzielnica','mode.edit':'Edycja','mode.view':'Podgląd',
       'size.title':'Rozmiar znaczników na zdjęciu','markers.heading':'Znaczniki','markers.emptyPanel':'Brak znaczników. Dotknij zdjęcia, aby oznaczyć przewód, moduł lub wyłącznik.',
       'fab.newProject':'Nowy projekt','modal.newProject.title':'Nowa rozdzielnica','field.name':'Nazwa','placeholder.projectName':'Np.: Rozdzielnica mieszkania, 3 piętro',
-      'field.photo':'Zdjęcie rozdzielnicy','upload.prompt':'Dotknij, aby wybrać zdjęcie','upload.processing':'Przetwarzanie zdjęcia…','upload.selected':'Zdjęcie wybrane — dotknij, aby zmienić','upload.error':'Nie udało się przetworzyć zdjęcia, spróbuj innego',
+      'field.photo':'Zdjęcie rozdzielnicy (opcjonalnie)','upload.prompt':'Dotknij, aby wybrać zdjęcie','upload.processing':'Przetwarzanie zdjęcia…','upload.selected':'Zdjęcie wybrane — dotknij, aby zmienić','upload.error':'Nie udało się przetworzyć zdjęcia, spróbuj innego',
       'btn.cancel':'Anuluj','btn.create':'Utwórz','btn.uploadingPhoto':'Przesyłanie zdjęcia…','btn.saving':'Zapisywanie…',
       'marker.modal.newTitle':'Nowy znacznik','marker.modal.editTitle':'Znacznik','field.type':'Typ','type.wire':'Przewód','type.module':'Moduł','type.note':'Notatka',
       'field.label':'Oznaczenie','placeholder.markerLabel':'Np.: L1, N, QF3','field.desc':'Opis','placeholder.markerDesc':'Np.: faza do gniazdek w kuchni, wyłącznik 16A',
@@ -2521,6 +2535,9 @@
   }
 
   function loadActivePhoto(){
+    const hasPhotos = currentProject.photos.length > 0;
+    photoEmptyState.hidden = hasPhotos;
+    stageImage.style.display = hasPhotos ? '' : 'none';
     stageImage.src = activePhoto().image;
     editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + activePhoto().markers.length;
     setMode('edit');
@@ -2531,7 +2548,7 @@
 
   function renderPhotoStrip(){
     photoStrip.innerHTML = '';
-    photoStrip.hidden = currentProject.photos.length <= 1;
+    photoStrip.hidden = currentProject.photos.length === 1;
     currentProject.photos.forEach((ph, i)=>{
       const thumb = document.createElement('button');
       thumb.type = 'button';
@@ -2736,32 +2753,35 @@
   btnCancelNewProject.addEventListener('click', closeNewProjectModal);
 
   btnCreateProject.addEventListener('click', async ()=>{
-    if(!pendingImageFull){ toast(t('toast.uploadPhotoFirst')); return; }
     const name = newProjectName.value.trim() || t('project.untitled');
     const now = Date.now();
     const id = uid();
     const photoId = uid();
 
     btnCreateProject.disabled = true;
-    btnCreateProject.textContent = t('btn.uploadingPhoto');
 
-    let fullUrl, thumbUrl;
-    try{
-      [fullUrl, thumbUrl] = await Promise.all([
-        uploadImage(pendingImageFull, id+'/'+photoId+'/full.jpg'),
-        uploadImage(pendingImageThumb, id+'/'+photoId+'/thumb.jpg')
-      ]);
-    }catch(e){
-      btnCreateProject.disabled = false;
-      btnCreateProject.textContent = t('btn.create');
-      toast(t('toast.uploadFailed'));
-      return;
+    let photos = [];
+    if(pendingImageFull){
+      btnCreateProject.textContent = t('btn.uploadingPhoto');
+      let fullUrl, thumbUrl;
+      try{
+        [fullUrl, thumbUrl] = await Promise.all([
+          uploadImage(pendingImageFull, id+'/'+photoId+'/full.jpg'),
+          uploadImage(pendingImageThumb, id+'/'+photoId+'/thumb.jpg')
+        ]);
+      }catch(e){
+        btnCreateProject.disabled = false;
+        btnCreateProject.textContent = t('btn.create');
+        toast(t('toast.uploadFailed'));
+        return;
+      }
+      photos = [{ id: photoId, image: fullUrl, thumb: thumbUrl, markers: [] }];
     }
 
     const full = {
       id, name, createdAt: now, updatedAt: now, pinSize: 13, symbolSize: 100, dimSize: 100,
       hasMaterials: false, hasFloorplan: false,
-      photos: [{ id: photoId, image: fullUrl, thumb: thumbUrl, markers: [] }],
+      photos: photos,
       materials: [],
       floorplans: []
     };
@@ -2778,7 +2798,7 @@
       return;
     }
 
-    const summary = { id, name, updatedAt: now, thumb: thumbUrl, markerCount: 0, photoCount: 1 };
+    const summary = { id, name, updatedAt: now, thumb: photos[0] ? photos[0].thumb : null, markerCount: 0, photoCount: photos.length };
     projects.push(summary);
     btnCreateProject.disabled = false;
     btnCreateProject.textContent = t('btn.create');
