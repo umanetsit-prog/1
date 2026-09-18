@@ -2486,7 +2486,7 @@
   function initAuthListener(){
     const client = getClient();
     if(!client) return;
-    client.auth.onAuthStateChange((event, session)=>{
+    client.auth.onAuthStateChange(async (event, session)=>{
       const wasSignedIn = !!currentUser;
       currentUser = session ? session.user : null;
       btnSignOut.hidden = !currentUser;
@@ -2494,6 +2494,13 @@
         authEmail.value = ''; authPassword.value = '';
         revealApp();
         showList();
+        try{
+          const loaded = await loadProjectList();
+          const loadedIds = new Set(loaded.map(p=>p.id));
+          const localOnly = projects.filter(p=>!loadedIds.has(p.id));
+          projects = [...loaded, ...localOnly];
+        }catch(e){}
+        if(!viewList.hidden) renderProjectGrid();
       }else if(!currentUser && wasSignedIn){
         projects = [];
         currentProject = null;
