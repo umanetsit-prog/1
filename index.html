@@ -121,6 +121,25 @@
     padding:0; margin-left:4px;
   }
   .link-btn:hover{text-decoration:underline;}
+
+  .share-hint{font-size:12.5px; color:var(--text-dim); line-height:1.5; margin:0 0 16px;}
+  .share-add-row{display:flex; gap:8px;}
+  .share-add-row input{flex:1;}
+  .share-add-row .ghost-btn{flex-shrink:0; white-space:nowrap;}
+  .share-member-list{display:flex; flex-direction:column; gap:8px; margin:14px 0 4px;}
+  .share-member-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 11px;
+  }
+  .share-member-email{font-size:13px; color:var(--text); word-break:break-all;}
+  .share-member-remove{
+    width:24px; height:24px; border-radius:7px; background:transparent; border:none;
+    color:var(--text-faint); font-size:16px; line-height:1; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .share-member-remove:hover{color:var(--danger); background:var(--danger-soft);}
+  .share-empty{font-size:12.5px; color:var(--text-faint); text-align:center; padding:10px 0; margin:6px 0 0;}
+  .share-empty[hidden]{display:none;}
   .list-hero h1{font-size:22px; margin:0 0 6px; font-weight:600;}
   .list-hero p{margin:0; color:var(--text-dim); font-size:14px; max-width:46ch; line-height:1.5;}
 
@@ -710,6 +729,15 @@
     #printMaterialsTable td{ padding:6px; border-bottom:1px solid #e2e2e2; }
     #printMaterialsTable td.num{ text-align:right; font-variant-numeric:tabular-nums; }
     #printMaterialsTable tfoot td{ font-weight:700; border-top:1.5px solid #333333; border-bottom:none; }
+    #printWorksSection{ margin-top:20px; page-break-before:always; padding-top:6px; }
+    #printWorksTable{ width:100%; border-collapse:collapse; font-size:12px; }
+    #printWorksTable th{
+      text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.03em;
+      color:#555555; border-bottom:1px solid #999999; padding:5px 6px;
+    }
+    #printWorksTable td{ padding:6px; border-bottom:1px solid #e2e2e2; }
+    #printWorksTable td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+    #printWorksTable tfoot td{ font-weight:700; border-top:1.5px solid #333333; border-bottom:none; }
     .print-plan-block{ page-break-before:always; padding-top:6px; }
     .print-plan-svg-wrap{ border:1px solid #ccc; padding:8px; background:#fff; }
     .print-plan-svg-wrap svg{ width:100%; height:auto; display:block; }
@@ -767,6 +795,9 @@
     </button>
     <button class="icon-btn" id="btnExport" hidden data-i18n-title="btn.exportPdf" title="Сохранить в PDF">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    </button>
+    <button class="icon-btn" id="btnShare" hidden data-i18n-title="share.title" title="Поделиться">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.6l6.8-3.7M8.6 13.4l6.8 3.7"/></svg>
     </button>
     <button class="icon-btn" id="btnDeleteProject" hidden data-i18n-title="btn.deleteProject" title="Удалить проект">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/></svg>
@@ -895,6 +926,30 @@
         </div>
       </div>
 
+      <div class="materials-section" id="worksSection" hidden>
+        <div class="section-head">
+          <h2 data-i18n="works.heading">Перечень работ</h2>
+          <button type="button" class="section-remove" id="btnRemoveWorks" data-i18n-title="block.remove" title="Убрать блок">&times;</button>
+        </div>
+        <div class="materials-table" id="worksTable">
+          <div class="materials-row materials-row-head">
+            <span data-i18n="works.col.name">Наименование</span>
+            <span data-i18n="works.col.qty">Кол-во</span>
+            <span data-i18n="works.col.price">Цена</span>
+            <span data-i18n="works.col.sum">Сумма</span>
+            <span></span>
+          </div>
+          <div id="worksRows"></div>
+          <p class="materials-empty" id="worksEmpty" data-i18n="works.empty">Список пуст. Добавьте первую позицию.</p>
+        </div>
+        <div class="materials-footer">
+          <button class="ghost-btn" id="btnAddWork" data-i18n="works.addRow">+ Добавить позицию</button>
+          <div class="materials-total">
+            <span data-i18n="works.total">Итого</span>: <span id="worksTotalValue" class="mono">0</span>
+          </div>
+        </div>
+      </div>
+
       <div class="floorplan-section" id="floorplanSection" hidden>
         <div class="section-head">
           <h2 data-i18n="fp.heading">План помещения</h2>
@@ -978,6 +1033,27 @@
   </div>
 </div>
 
+<!-- SHARE MODAL -->
+<div class="modal-overlay" id="modalShare" hidden>
+  <div class="modal-card">
+    <h3 data-i18n="share.title">Поделиться</h3>
+    <p class="share-hint" data-i18n="share.hint">Добавьте email человека, зарегистрированного в приложении, — он увидит этот проект в своём списке и сможет его редактировать.</p>
+    <div class="field">
+      <label data-i18n="share.emailLabel">Email</label>
+      <div class="share-add-row">
+        <input type="email" id="shareEmailInput" autocomplete="email" inputmode="email">
+        <button type="button" class="ghost-btn" id="btnShareAdd" data-i18n="share.add">Добавить</button>
+      </div>
+    </div>
+    <p class="auth-error" id="shareError" hidden></p>
+    <div class="share-member-list" id="shareMemberList"></div>
+    <p class="share-empty" id="shareEmpty" data-i18n="share.empty">Проект пока ни с кем не расшарен.</p>
+    <div class="modal-actions">
+      <button class="ghost-btn" id="btnCloseShare" data-i18n="btn.cancel">Отмена</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADD BLOCK MODAL -->
 <div class="modal-overlay" id="modalAddBlock" hidden>
   <div class="modal-card">
@@ -988,6 +1064,13 @@
         <span>
           <span class="block-choice-title" data-i18n="materials.heading">Материалы</span>
           <span class="block-choice-desc" data-i18n="block.materials.desc">Список товаров с ценами и суммой</span>
+        </span>
+      </button>
+      <button type="button" class="block-choice-btn" id="choiceAddWorks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 7h11M9 12h11M9 17h11"/><circle cx="4.5" cy="7" r="1.4" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="4.5" cy="17" r="1.4" fill="currentColor" stroke="none"/></svg>
+        <span>
+          <span class="block-choice-title" data-i18n="works.heading">Перечень работ</span>
+          <span class="block-choice-desc" data-i18n="block.works.desc">Список работ с ценами и суммой</span>
         </span>
       </button>
       <button type="button" class="block-choice-btn" id="choiceAddFloorplan">
@@ -1094,6 +1177,10 @@
     <h2 data-i18n="materials.heading">Материалы</h2>
     <table id="printMaterialsTable"></table>
   </div>
+  <div id="printWorksSection">
+    <h2 data-i18n="works.heading">Перечень работ</h2>
+    <table id="printWorksTable"></table>
+  </div>
   <div id="printFloorplansContainer"></div>
 </div>
 
@@ -1135,6 +1222,14 @@
   const btnBack = el('btnBack');
   const btnExport = el('btnExport');
   const btnDeleteProject = el('btnDeleteProject');
+  const btnShare = el('btnShare');
+  const modalShare = el('modalShare');
+  const shareEmailInput = el('shareEmailInput');
+  const btnShareAdd = el('btnShareAdd');
+  const shareError = el('shareError');
+  const shareMemberList = el('shareMemberList');
+  const shareEmpty = el('shareEmpty');
+  const btnCloseShare = el('btnCloseShare');
   const brandSub = el('brandSub');
   const langSelect = el('langSelect');
 
@@ -1162,6 +1257,13 @@
   const materialsTotalValue = el('materialsTotalValue');
   const btnAddMaterial = el('btnAddMaterial');
   const materialsSection = el('materialsSection');
+  const worksRows = el('worksRows');
+  const worksEmpty = el('worksEmpty');
+  const worksTotalValue = el('worksTotalValue');
+  const btnAddWork = el('btnAddWork');
+  const worksSection = el('worksSection');
+  const btnRemoveWorks = el('btnRemoveWorks');
+  const choiceAddWorks = el('choiceAddWorks');
   const floorplanSection = el('floorplanSection');
   const btnRemoveMaterials = el('btnRemoveMaterials');
   const btnRemoveFloorplan = el('btnRemoveFloorplan');
@@ -1339,6 +1441,87 @@
     if(inputs.length) inputs[inputs.length-1].focus();
   });
 
+  /* ---------------- Works table ---------------- */
+  let worksDebounce = null;
+  function scheduleWorksSave(){
+    clearTimeout(worksDebounce);
+    worksDebounce = setTimeout(async ()=>{
+      currentProject.updatedAt = Date.now();
+      await persistCurrentAndSummary();
+    }, 500);
+  }
+  function renderWorks(){
+    if(!currentProject) return;
+    if(!Array.isArray(currentProject.works)) currentProject.works = [];
+    const list = currentProject.works;
+    worksRows.innerHTML = '';
+    worksEmpty.classList.toggle('hidden', list.length > 0);
+    let total = 0;
+    list.forEach((item, idx)=>{
+      const qty = parseFloat(item.qty) || 0;
+      const price = parseFloat(item.price) || 0;
+      const sum = qty * price;
+      total += sum;
+
+      const row = document.createElement('div');
+      row.className = 'materials-row';
+      row.innerHTML = `
+        <input type="text" class="wrk-name" value="${escapeAttr(item.name || '')}" placeholder="${escapeAttr(t('works.namePlaceholder'))}">
+        <input type="number" class="wrk-qty" value="${escapeAttr(item.qty == null ? '' : item.qty)}" min="0" step="any" inputmode="decimal">
+        <input type="number" class="wrk-price" value="${escapeAttr(item.price == null ? '' : item.price)}" min="0" step="any" inputmode="decimal">
+        <span class="materials-row-sum">${fmtMoney(sum)}</span>
+        <button type="button" class="materials-row-del" title="${escapeAttr(t('btn.delete'))}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/></svg>
+        </button>`;
+
+      row.querySelector('.wrk-name').addEventListener('input', (e)=>{
+        item.name = e.target.value;
+        scheduleWorksSave();
+      });
+      row.querySelector('.wrk-qty').addEventListener('input', (e)=>{
+        item.qty = e.target.value;
+        updateWorksSums();
+        scheduleWorksSave();
+      });
+      row.querySelector('.wrk-price').addEventListener('input', (e)=>{
+        item.price = e.target.value;
+        updateWorksSums();
+        scheduleWorksSave();
+      });
+      row.querySelector('.materials-row-del').addEventListener('click', ()=>{
+        currentProject.works.splice(idx, 1);
+        renderWorks();
+        scheduleWorksSave();
+      });
+
+      worksRows.appendChild(row);
+    });
+    worksTotalValue.textContent = fmtMoney(total);
+  }
+  function updateWorksSums(){
+    const list = currentProject.works || [];
+    const rows = worksRows.querySelectorAll('.materials-row');
+    let total = 0;
+    list.forEach((item, idx)=>{
+      const qty = parseFloat(item.qty) || 0;
+      const price = parseFloat(item.price) || 0;
+      const sum = qty * price;
+      total += sum;
+      const row = rows[idx];
+      if(row) row.querySelector('.materials-row-sum').textContent = fmtMoney(sum);
+    });
+    worksTotalValue.textContent = fmtMoney(total);
+  }
+  btnAddWork.addEventListener('click', ()=>{
+    if(!currentProject) return;
+    if(!Array.isArray(currentProject.works)) currentProject.works = [];
+    currentProject.works.push({id: uid(), name:'', qty:'', price:''});
+    renderWorks();
+    scheduleWorksSave();
+    const inputs = worksRows.querySelectorAll('.wrk-name');
+    if(inputs.length) inputs[inputs.length-1].focus();
+  });
+
   /* ---------------- Optional blocks (materials / floor plan) ---------------- */
   btnAddBlock.addEventListener('click', ()=>{
     if(!currentProject) return;
@@ -1353,6 +1536,13 @@
     materialsSection.scrollIntoView({behavior:'smooth', block:'start'});
     await scheduleBlockFlagsSave();
   });
+  choiceAddWorks.addEventListener('click', async ()=>{
+    currentProject.hasWorks = true;
+    modalAddBlock.hidden = true;
+    updateBlockVisibility();
+    worksSection.scrollIntoView({behavior:'smooth', block:'start'});
+    await scheduleBlockFlagsSave();
+  });
   choiceAddFloorplan.addEventListener('click', async ()=>{
     currentProject.hasFloorplan = true;
     modalAddBlock.hidden = true;
@@ -1362,6 +1552,11 @@
   });
   btnRemoveMaterials.addEventListener('click', async ()=>{
     currentProject.hasMaterials = false;
+    updateBlockVisibility();
+    await scheduleBlockFlagsSave();
+  });
+  btnRemoveWorks.addEventListener('click', async ()=>{
+    currentProject.hasWorks = false;
     updateBlockVisibility();
     await scheduleBlockFlagsSave();
   });
@@ -2166,7 +2361,7 @@
       'toast.storageUnavailable':'Хранилище недоступно — проверьте подключение к Supabase','toast.sbNotConfigured':'Впишите SUPABASE_URL и SUPABASE_ANON_KEY в код сайта, чтобы включить сохранение',
       'toast.sbSaveFailed':'Не удалось сохранить в Supabase — проверьте связь','toast.pdfPhotoFailed':'Не удалось загрузить фото для сохранения в PDF',
       'toast.sbLibFailed':'Не удалось загрузить библиотеку Supabase. Проверьте интернет-соединение и перезагрузите страницу.',
-      'print.noMarkers':'Меток пока нет.','print.photoLabel':'Щит {n}','editor.subtitle':'Редактирование щита','project.untitled':'Без названия','photo.add':'Добавить фото','confirm.deletePhoto.title':'Удалить фото?','confirm.deletePhoto.text':'Фото и все его метки будут удалены безвозвратно.','materials.heading':'Материалы','materials.col.name':'Наименование','materials.col.qty':'Кол-во','materials.col.price':'Цена','materials.col.sum':'Сумма','materials.empty':'Список пуст. Добавьте первую позицию.','materials.addRow':'+ Добавить позицию','materials.total':'Итого','materials.namePlaceholder':'Например: Автомат 16А','fp.heading':'План помещения','fp.mode.walls':'Стены','fp.mode.symbols':'Обозначения','fp.undo':'Отменить точку','fp.finish':'Завершить контур','fp.clear':'Очистить всё','fp.hint.walls':'Нажимайте по очереди на углы комнаты — линии соединятся автоматически. Чтобы замкнуть контур, нажмите рядом с первой точкой.','fp.hint.symbols':'Выберите обозначение внизу и нажмите на план, чтобы разместить его. Перетаскивайте, чтобы переместить.','fp.confirmClear.title':'Очистить план?','fp.confirmClear.text':'Все стены и обозначения на плане будут удалены безвозвратно.','fp.symbol.noteLabel':'Заметка (необязательно)','fp.type.socket':'Розетка','fp.type.socket_double':'Розетка двойная','fp.type.socket_grounded':'Розетка с заземлением','fp.type.socket_waterproof':'Розетка влагозащищённая','fp.type.socket_3phase':'Розетка силовая (3 фазы)','fp.type.switch_1':'Выключатель одноклавишный','fp.type.switch_2':'Выключатель двухклавишный','fp.type.switch_pass':'Выключатель проходной','fp.type.dimmer':'Диммер','fp.type.light':'Светильник','fp.type.chandelier':'Люстра','fp.type.sconce':'Бра (настенный светильник)','fp.type.spot':'Точечный светильник','fp.type.junction_box':'Распределительная коробка','fp.type.panel':'Электрощит','fp.type.meter':'Счётчик электроэнергии','fp.type.fan':'Вентилятор','fp.type.bell':'Звонок','fp.type.tv_outlet':'ТВ розетка','fp.type.data_outlet':'Розетка интернет/LAN','fp.symbolSize.title':'Размер значков обозначений','block.add':'Добавить блок','block.remove':'Убрать блок','block.pickTitle':'Добавить блок','block.materials.desc':'Список товаров с ценами и суммой','block.floorplan.desc':'Стены и условные обозначения','fp.mode.dimensions':'Размеры','fp.hint.dimensions':'Нажмите на первую точку, затем на вторую — появится поле для ввода расстояния. Можно измерять стены или расстояние до любого объекта.','fp.dim.modalTitle':'Размер','fp.dim.label':'Значение','fp.dim.placeholder':'Например: 3,2 м','fp.dimSize.title':'Размер ячеек размеров','fp.history.undo':'Шаг назад','fp.history.redo':'Шаг вперёд','fp.planDefaultName':'План','confirm.deleteFloorplan.title':'Удалить план?','confirm.deleteFloorplan.text':'Стены, обозначения и размеры этого плана будут удалены безвозвратно.','fp.renamePrompt':'Название плана','fp.addPlan':'Добавить план','print.photoLabel':'Щит {n}','auth.title':'Вход','auth.signInSub':'Войдите, чтобы увидеть свои проекты.','auth.signUpSub':'Создайте аккаунт, чтобы начать работу.','auth.email':'Email','auth.password':'Пароль','auth.signIn':'Войти','auth.signUp':'Зарегистрироваться','auth.noAccount':'Нет аккаунта?','auth.hasAccount':'Уже есть аккаунт?','auth.checkEmail':'Проверьте почту и перейдите по ссылке для подтверждения регистрации.','auth.errorRequired':'Введите email и пароль','auth.errorGeneric':'Что-то пошло не так. Попробуйте ещё раз.','auth.signOut':'Выйти'
+      'print.noMarkers':'Меток пока нет.','print.photoLabel':'Щит {n}','editor.subtitle':'Редактирование щита','project.untitled':'Без названия','photo.add':'Добавить фото','confirm.deletePhoto.title':'Удалить фото?','confirm.deletePhoto.text':'Фото и все его метки будут удалены безвозвратно.','materials.heading':'Материалы','materials.col.name':'Наименование','materials.col.qty':'Кол-во','materials.col.price':'Цена','materials.col.sum':'Сумма','materials.empty':'Список пуст. Добавьте первую позицию.','materials.addRow':'+ Добавить позицию','materials.total':'Итого','materials.namePlaceholder':'Например: Автомат 16А','fp.heading':'План помещения','fp.mode.walls':'Стены','fp.mode.symbols':'Обозначения','fp.undo':'Отменить точку','fp.finish':'Завершить контур','fp.clear':'Очистить всё','fp.hint.walls':'Нажимайте по очереди на углы комнаты — линии соединятся автоматически. Чтобы замкнуть контур, нажмите рядом с первой точкой.','fp.hint.symbols':'Выберите обозначение внизу и нажмите на план, чтобы разместить его. Перетаскивайте, чтобы переместить.','fp.confirmClear.title':'Очистить план?','fp.confirmClear.text':'Все стены и обозначения на плане будут удалены безвозвратно.','fp.symbol.noteLabel':'Заметка (необязательно)','fp.type.socket':'Розетка','fp.type.socket_double':'Розетка двойная','fp.type.socket_grounded':'Розетка с заземлением','fp.type.socket_waterproof':'Розетка влагозащищённая','fp.type.socket_3phase':'Розетка силовая (3 фазы)','fp.type.switch_1':'Выключатель одноклавишный','fp.type.switch_2':'Выключатель двухклавишный','fp.type.switch_pass':'Выключатель проходной','fp.type.dimmer':'Диммер','fp.type.light':'Светильник','fp.type.chandelier':'Люстра','fp.type.sconce':'Бра (настенный светильник)','fp.type.spot':'Точечный светильник','fp.type.junction_box':'Распределительная коробка','fp.type.panel':'Электрощит','fp.type.meter':'Счётчик электроэнергии','fp.type.fan':'Вентилятор','fp.type.bell':'Звонок','fp.type.tv_outlet':'ТВ розетка','fp.type.data_outlet':'Розетка интернет/LAN','fp.symbolSize.title':'Размер значков обозначений','block.add':'Добавить блок','block.remove':'Убрать блок','block.pickTitle':'Добавить блок','block.materials.desc':'Список товаров с ценами и суммой','block.floorplan.desc':'Стены и условные обозначения','fp.mode.dimensions':'Размеры','fp.hint.dimensions':'Нажмите на первую точку, затем на вторую — появится поле для ввода расстояния. Можно измерять стены или расстояние до любого объекта.','fp.dim.modalTitle':'Размер','fp.dim.label':'Значение','fp.dim.placeholder':'Например: 3,2 м','fp.dimSize.title':'Размер ячеек размеров','fp.history.undo':'Шаг назад','fp.history.redo':'Шаг вперёд','fp.planDefaultName':'План','confirm.deleteFloorplan.title':'Удалить план?','confirm.deleteFloorplan.text':'Стены, обозначения и размеры этого плана будут удалены безвозвратно.','fp.renamePrompt':'Название плана','fp.addPlan':'Добавить план','print.photoLabel':'Щит {n}','auth.title':'Вход','auth.signInSub':'Войдите, чтобы увидеть свои проекты.','auth.signUpSub':'Создайте аккаунт, чтобы начать работу.','auth.email':'Email','auth.password':'Пароль','auth.signIn':'Войти','auth.signUp':'Зарегистрироваться','auth.noAccount':'Нет аккаунта?','auth.hasAccount':'Уже есть аккаунт?','auth.checkEmail':'Проверьте почту и перейдите по ссылке для подтверждения регистрации.','auth.errorRequired':'Введите email и пароль','auth.errorGeneric':'Что-то пошло не так. Попробуйте ещё раз.','auth.signOut':'Выйти','works.heading':'Перечень работ','works.col.name':'Наименование','works.col.qty':'Кол-во','works.col.price':'Цена','works.col.sum':'Сумма','works.empty':'Список пуст. Добавьте первую позицию.','works.addRow':'+ Добавить позицию','works.total':'Итого','works.namePlaceholder':'Например: Монтаж автомата','block.works.desc':'Список работ с ценами и суммой'
     },
     uk:{
       'brand.name':'Щитова','app.tagline':'Маркування електрощитів','list.title':'Проєкти',
@@ -2190,7 +2385,7 @@
       'toast.storageUnavailable':'Сховище недоступне — перевірте підключення до Supabase','toast.sbNotConfigured':'Впишіть SUPABASE_URL і SUPABASE_ANON_KEY у код сайту, щоб увімкнути збереження',
       'toast.sbSaveFailed':'Не вдалося зберегти в Supabase — перевірте з’єднання','toast.pdfPhotoFailed':'Не вдалося завантажити фото для збереження в PDF',
       'toast.sbLibFailed':'Не вдалося завантажити бібліотеку Supabase. Перевірте інтернет-з’єднання і перезавантажте сторінку.',
-      'print.noMarkers':'Міток поки немає.','print.photoLabel':'Щит {n}','editor.subtitle':'Редагування щита','project.untitled':'Без назви','photo.add':'Додати фото','confirm.deletePhoto.title':'Видалити фото?','confirm.deletePhoto.text':'Фото і всі його мітки будуть видалені назавжди.','materials.heading':'Матеріали','materials.col.name':'Найменування','materials.col.qty':'К-сть','materials.col.price':'Ціна','materials.col.sum':'Сума','materials.empty':'Список порожній. Додайте першу позицію.','materials.addRow':'+ Додати позицію','materials.total':'Разом','materials.namePlaceholder':'Наприклад: Автомат 16А','fp.heading':'План приміщення','fp.mode.walls':'Стіни','fp.mode.symbols':'Позначення','fp.undo':'Скасувати точку','fp.finish':'Завершити контур','fp.clear':'Очистити все','fp.hint.walls':'Натискайте по черзі на кути кімнати — лінії з’єднаються автоматично. Щоб замкнути контур, натисніть біля першої точки.','fp.hint.symbols':'Виберіть позначення внизу і натисніть на план, щоб розмістити його. Перетягуйте, щоб перемістити.','fp.confirmClear.title':'Очистити план?','fp.confirmClear.text':'Усі стіни та позначення на плані будуть видалені назавжди.','fp.symbol.noteLabel':'Нотатка (необов’язково)','fp.type.socket':'Розетка','fp.type.socket_double':'Розетка подвійна','fp.type.socket_grounded':'Розетка із заземленням','fp.type.socket_waterproof':'Розетка вологозахищена','fp.type.socket_3phase':'Розетка силова (3 фази)','fp.type.switch_1':'Вимикач одноклавішний','fp.type.switch_2':'Вимикач двоклавішний','fp.type.switch_pass':'Вимикач прохідний','fp.type.dimmer':'Димер','fp.type.light':'Світильник','fp.type.chandelier':'Люстра','fp.type.sconce':'Бра (настінний світильник)','fp.type.spot':'Точковий світильник','fp.type.junction_box':'Розподільна коробка','fp.type.panel':'Електрощит','fp.type.meter':'Лічильник електроенергії','fp.type.fan':'Вентилятор','fp.type.bell':'Дзвінок','fp.type.tv_outlet':'ТВ розетка','fp.type.data_outlet':'Розетка інтернет/LAN','fp.symbolSize.title':'Розмір значків позначень','block.add':'Додати блок','block.remove':'Прибрати блок','block.pickTitle':'Додати блок','block.materials.desc':'Список товарів із цінами та сумою','block.floorplan.desc':'Стіни та умовні позначення','fp.mode.dimensions':'Розміри','fp.hint.dimensions':'Натисніть на першу точку, потім на другу — з’явиться поле для введення відстані. Можна вимірювати стіни або відстань до будь-якого об’єкта.','fp.dim.modalTitle':'Розмір','fp.dim.label':'Значення','fp.dim.placeholder':'Наприклад: 3,2 м','fp.dimSize.title':'Розмір коміток розмірів','fp.history.undo':'Крок назад','fp.history.redo':'Крок вперед','fp.planDefaultName':'План','confirm.deleteFloorplan.title':'Видалити план?','confirm.deleteFloorplan.text':'Стіни, позначення та розміри цього плану будуть видалені назавжди.','fp.renamePrompt':'Назва плану','fp.addPlan':'Додати план','print.photoLabel':'Щит {n}','auth.title':'Вхід','auth.signInSub':'Увійдіть, щоб побачити свої проєкти.','auth.signUpSub':'Створіть акаунт, щоб почати роботу.','auth.email':'Email','auth.password':'Пароль','auth.signIn':'Увійти','auth.signUp':'Зареєструватися','auth.noAccount':'Немає акаунту?','auth.hasAccount':'Вже є акаунт?','auth.checkEmail':'Перевірте пошту і перейдіть за посиланням для підтвердження реєстрації.','auth.errorRequired':'Введіть email і пароль','auth.errorGeneric':'Щось пішло не так. Спробуйте ще раз.','auth.signOut':'Вийти'
+      'print.noMarkers':'Міток поки немає.','print.photoLabel':'Щит {n}','editor.subtitle':'Редагування щита','project.untitled':'Без назви','photo.add':'Додати фото','confirm.deletePhoto.title':'Видалити фото?','confirm.deletePhoto.text':'Фото і всі його мітки будуть видалені назавжди.','materials.heading':'Матеріали','materials.col.name':'Найменування','materials.col.qty':'К-сть','materials.col.price':'Ціна','materials.col.sum':'Сума','materials.empty':'Список порожній. Додайте першу позицію.','materials.addRow':'+ Додати позицію','materials.total':'Разом','materials.namePlaceholder':'Наприклад: Автомат 16А','fp.heading':'План приміщення','fp.mode.walls':'Стіни','fp.mode.symbols':'Позначення','fp.undo':'Скасувати точку','fp.finish':'Завершити контур','fp.clear':'Очистити все','fp.hint.walls':'Натискайте по черзі на кути кімнати — лінії з’єднаються автоматично. Щоб замкнути контур, натисніть біля першої точки.','fp.hint.symbols':'Виберіть позначення внизу і натисніть на план, щоб розмістити його. Перетягуйте, щоб перемістити.','fp.confirmClear.title':'Очистити план?','fp.confirmClear.text':'Усі стіни та позначення на плані будуть видалені назавжди.','fp.symbol.noteLabel':'Нотатка (необов’язково)','fp.type.socket':'Розетка','fp.type.socket_double':'Розетка подвійна','fp.type.socket_grounded':'Розетка із заземленням','fp.type.socket_waterproof':'Розетка вологозахищена','fp.type.socket_3phase':'Розетка силова (3 фази)','fp.type.switch_1':'Вимикач одноклавішний','fp.type.switch_2':'Вимикач двоклавішний','fp.type.switch_pass':'Вимикач прохідний','fp.type.dimmer':'Димер','fp.type.light':'Світильник','fp.type.chandelier':'Люстра','fp.type.sconce':'Бра (настінний світильник)','fp.type.spot':'Точковий світильник','fp.type.junction_box':'Розподільна коробка','fp.type.panel':'Електрощит','fp.type.meter':'Лічильник електроенергії','fp.type.fan':'Вентилятор','fp.type.bell':'Дзвінок','fp.type.tv_outlet':'ТВ розетка','fp.type.data_outlet':'Розетка інтернет/LAN','fp.symbolSize.title':'Розмір значків позначень','block.add':'Додати блок','block.remove':'Прибрати блок','block.pickTitle':'Додати блок','block.materials.desc':'Список товарів із цінами та сумою','block.floorplan.desc':'Стіни та умовні позначення','fp.mode.dimensions':'Розміри','fp.hint.dimensions':'Натисніть на першу точку, потім на другу — з’явиться поле для введення відстані. Можна вимірювати стіни або відстань до будь-якого об’єкта.','fp.dim.modalTitle':'Розмір','fp.dim.label':'Значення','fp.dim.placeholder':'Наприклад: 3,2 м','fp.dimSize.title':'Розмір коміток розмірів','fp.history.undo':'Крок назад','fp.history.redo':'Крок вперед','fp.planDefaultName':'План','confirm.deleteFloorplan.title':'Видалити план?','confirm.deleteFloorplan.text':'Стіни, позначення та розміри цього плану будуть видалені назавжди.','fp.renamePrompt':'Назва плану','fp.addPlan':'Додати план','print.photoLabel':'Щит {n}','auth.title':'Вхід','auth.signInSub':'Увійдіть, щоб побачити свої проєкти.','auth.signUpSub':'Створіть акаунт, щоб почати роботу.','auth.email':'Email','auth.password':'Пароль','auth.signIn':'Увійти','auth.signUp':'Зареєструватися','auth.noAccount':'Немає акаунту?','auth.hasAccount':'Вже є акаунт?','auth.checkEmail':'Перевірте пошту і перейдіть за посиланням для підтвердження реєстрації.','auth.errorRequired':'Введіть email і пароль','auth.errorGeneric':'Щось пішло не так. Спробуйте ще раз.','auth.signOut':'Вийти','works.heading':'Перелік робіт','works.col.name':'Найменування','works.col.qty':'К-сть','works.col.price':'Ціна','works.col.sum':'Сума','works.empty':'Список порожній. Додайте першу позицію.','works.addRow':'+ Додати позицію','works.total':'Разом','works.namePlaceholder':'Наприклад: Монтаж автомата','block.works.desc':'Список робіт із цінами та сумою'
     },
     en:{
       'brand.name':'PanelBoard','app.tagline':'Electrical panel labeling','list.title':'Projects',
@@ -2214,7 +2409,7 @@
       'toast.storageUnavailable':'Storage unavailable — check your Supabase connection','toast.sbNotConfigured':'Fill in SUPABASE_URL and SUPABASE_ANON_KEY in the site code to enable saving',
       'toast.sbSaveFailed':'Could not save to Supabase — check your connection','toast.pdfPhotoFailed':'Could not load the photo for the PDF',
       'toast.sbLibFailed':'Could not load the Supabase library. Check your internet connection and reload the page.',
-      'print.noMarkers':'No markers yet.','print.photoLabel':'Panel {n}','editor.subtitle':'Editing panel','project.untitled':'Untitled','photo.add':'Add photo','confirm.deletePhoto.title':'Delete this photo?','confirm.deletePhoto.text':'The photo and all its markers will be permanently deleted.','materials.heading':'Materials','materials.col.name':'Item','materials.col.qty':'Qty','materials.col.price':'Price','materials.col.sum':'Sum','materials.empty':'The list is empty. Add the first item.','materials.addRow':'+ Add item','materials.total':'Total','materials.namePlaceholder':'E.g.: 16A breaker','fp.heading':'Floor plan','fp.mode.walls':'Walls','fp.mode.symbols':'Symbols','fp.undo':'Undo point','fp.finish':'Finish outline','fp.clear':'Clear all','fp.hint.walls':'Tap the room’s corners one by one — the lines connect automatically. Tap near the first point to close the outline.','fp.hint.symbols':'Pick a symbol below, then tap the plan to place it. Drag to move it.','fp.confirmClear.title':'Clear the plan?','fp.confirmClear.text':'All walls and symbols on the plan will be permanently deleted.','fp.symbol.noteLabel':'Note (optional)','fp.type.socket':'Outlet','fp.type.socket_double':'Double outlet','fp.type.socket_grounded':'Grounded outlet','fp.type.socket_waterproof':'Waterproof outlet','fp.type.socket_3phase':'Power outlet (3-phase)','fp.type.switch_1':'Single-gang switch','fp.type.switch_2':'Two-gang switch','fp.type.switch_pass':'Two-way switch','fp.type.dimmer':'Dimmer','fp.type.light':'Light fixture','fp.type.chandelier':'Chandelier','fp.type.sconce':'Wall light','fp.type.spot':'Spotlight','fp.type.junction_box':'Junction box','fp.type.panel':'Distribution panel','fp.type.meter':'Electricity meter','fp.type.fan':'Fan','fp.type.bell':'Doorbell','fp.type.tv_outlet':'TV outlet','fp.type.data_outlet':'Network/LAN outlet','fp.symbolSize.title':'Symbol icon size','block.add':'Add block','block.remove':'Remove block','block.pickTitle':'Add a block','block.materials.desc':'A list of items with prices and totals','block.floorplan.desc':'Walls and electrical symbols','fp.mode.dimensions':'Dimensions','fp.hint.dimensions':'Tap the first point, then the second — a field to enter the distance will appear. You can measure walls or the distance to any object.','fp.dim.modalTitle':'Dimension','fp.dim.label':'Value','fp.dim.placeholder':'E.g.: 3.2 m','fp.dimSize.title':'Dimension label size','fp.history.undo':'Undo','fp.history.redo':'Redo','fp.planDefaultName':'Plan','confirm.deleteFloorplan.title':'Delete this plan?','confirm.deleteFloorplan.text':'The walls, symbols, and dimensions of this plan will be permanently deleted.','fp.renamePrompt':'Plan name','fp.addPlan':'Add plan','print.photoLabel':'Panel {n}','auth.title':'Sign in','auth.signInSub':'Sign in to see your projects.','auth.signUpSub':'Create an account to get started.','auth.email':'Email','auth.password':'Password','auth.signIn':'Sign in','auth.signUp':'Sign up','auth.noAccount':'No account?','auth.hasAccount':'Already have an account?','auth.checkEmail':'Check your email and click the link to confirm your account.','auth.errorRequired':'Enter your email and password','auth.errorGeneric':'Something went wrong. Please try again.','auth.signOut':'Sign out'
+      'print.noMarkers':'No markers yet.','print.photoLabel':'Panel {n}','editor.subtitle':'Editing panel','project.untitled':'Untitled','photo.add':'Add photo','confirm.deletePhoto.title':'Delete this photo?','confirm.deletePhoto.text':'The photo and all its markers will be permanently deleted.','materials.heading':'Materials','materials.col.name':'Item','materials.col.qty':'Qty','materials.col.price':'Price','materials.col.sum':'Sum','materials.empty':'The list is empty. Add the first item.','materials.addRow':'+ Add item','materials.total':'Total','materials.namePlaceholder':'E.g.: 16A breaker','fp.heading':'Floor plan','fp.mode.walls':'Walls','fp.mode.symbols':'Symbols','fp.undo':'Undo point','fp.finish':'Finish outline','fp.clear':'Clear all','fp.hint.walls':'Tap the room’s corners one by one — the lines connect automatically. Tap near the first point to close the outline.','fp.hint.symbols':'Pick a symbol below, then tap the plan to place it. Drag to move it.','fp.confirmClear.title':'Clear the plan?','fp.confirmClear.text':'All walls and symbols on the plan will be permanently deleted.','fp.symbol.noteLabel':'Note (optional)','fp.type.socket':'Outlet','fp.type.socket_double':'Double outlet','fp.type.socket_grounded':'Grounded outlet','fp.type.socket_waterproof':'Waterproof outlet','fp.type.socket_3phase':'Power outlet (3-phase)','fp.type.switch_1':'Single-gang switch','fp.type.switch_2':'Two-gang switch','fp.type.switch_pass':'Two-way switch','fp.type.dimmer':'Dimmer','fp.type.light':'Light fixture','fp.type.chandelier':'Chandelier','fp.type.sconce':'Wall light','fp.type.spot':'Spotlight','fp.type.junction_box':'Junction box','fp.type.panel':'Distribution panel','fp.type.meter':'Electricity meter','fp.type.fan':'Fan','fp.type.bell':'Doorbell','fp.type.tv_outlet':'TV outlet','fp.type.data_outlet':'Network/LAN outlet','fp.symbolSize.title':'Symbol icon size','block.add':'Add block','block.remove':'Remove block','block.pickTitle':'Add a block','block.materials.desc':'A list of items with prices and totals','block.floorplan.desc':'Walls and electrical symbols','fp.mode.dimensions':'Dimensions','fp.hint.dimensions':'Tap the first point, then the second — a field to enter the distance will appear. You can measure walls or the distance to any object.','fp.dim.modalTitle':'Dimension','fp.dim.label':'Value','fp.dim.placeholder':'E.g.: 3.2 m','fp.dimSize.title':'Dimension label size','fp.history.undo':'Undo','fp.history.redo':'Redo','fp.planDefaultName':'Plan','confirm.deleteFloorplan.title':'Delete this plan?','confirm.deleteFloorplan.text':'The walls, symbols, and dimensions of this plan will be permanently deleted.','fp.renamePrompt':'Plan name','fp.addPlan':'Add plan','print.photoLabel':'Panel {n}','auth.title':'Sign in','auth.signInSub':'Sign in to see your projects.','auth.signUpSub':'Create an account to get started.','auth.email':'Email','auth.password':'Password','auth.signIn':'Sign in','auth.signUp':'Sign up','auth.noAccount':'No account?','auth.hasAccount':'Already have an account?','auth.checkEmail':'Check your email and click the link to confirm your account.','auth.errorRequired':'Enter your email and password','auth.errorGeneric':'Something went wrong. Please try again.','auth.signOut':'Sign out','works.heading':'List of works','works.col.name':'Item','works.col.qty':'Qty','works.col.price':'Price','works.col.sum':'Sum','works.empty':'The list is empty. Add the first item.','works.addRow':'+ Add item','works.total':'Total','works.namePlaceholder':'E.g.: Breaker installation','block.works.desc':'A list of work items with prices and totals'
     },
     de:{
       'brand.name':'Verteiler','app.tagline':'Kennzeichnung von Elektroverteilern','list.title':'Projekte',
@@ -2238,7 +2433,7 @@
       'toast.storageUnavailable':'Speicher nicht verfügbar — Supabase-Verbindung prüfen','toast.sbNotConfigured':'SUPABASE_URL und SUPABASE_ANON_KEY im Code eintragen, um das Speichern zu aktivieren',
       'toast.sbSaveFailed':'Speichern in Supabase fehlgeschlagen — Verbindung prüfen','toast.pdfPhotoFailed':'Foto für das PDF konnte nicht geladen werden',
       'toast.sbLibFailed':'Supabase-Bibliothek konnte nicht geladen werden. Internetverbindung prüfen und Seite neu laden.',
-      'print.noMarkers':'Noch keine Markierungen.','print.photoLabel':'Verteiler {n}','editor.subtitle':'Verteiler bearbeiten','project.untitled':'Ohne Namen','photo.add':'Foto hinzufügen','confirm.deletePhoto.title':'Foto löschen?','confirm.deletePhoto.text':'Das Foto und alle seine Markierungen werden endgültig gelöscht.','materials.heading':'Materialien','materials.col.name':'Bezeichnung','materials.col.qty':'Menge','materials.col.price':'Preis','materials.col.sum':'Summe','materials.empty':'Die Liste ist leer. Fügen Sie den ersten Posten hinzu.','materials.addRow':'+ Position hinzufügen','materials.total':'Gesamt','materials.namePlaceholder':'Z. B.: 16A-Automat','fp.heading':'Grundriss','fp.mode.walls':'Wände','fp.mode.symbols':'Symbole','fp.undo':'Punkt rückgängig','fp.finish':'Kontur abschließen','fp.clear':'Alles löschen','fp.hint.walls':'Tippen Sie nacheinander auf die Raumecken — die Linien verbinden sich automatisch. Zum Schließen der Kontur in der Nähe des ersten Punkts tippen.','fp.hint.symbols':'Wählen Sie unten ein Symbol und tippen Sie auf den Plan, um es zu platzieren. Zum Verschieben ziehen.','fp.confirmClear.title':'Plan löschen?','fp.confirmClear.text':'Alle Wände und Symbole im Plan werden endgültig gelöscht.','fp.symbol.noteLabel':'Notiz (optional)','fp.type.socket':'Steckdose','fp.type.socket_double':'Doppelsteckdose','fp.type.socket_grounded':'Steckdose mit Erdung','fp.type.socket_waterproof':'Spritzwassergeschützte Steckdose','fp.type.socket_3phase':'Kraftsteckdose (3-phasig)','fp.type.switch_1':'Einfachschalter','fp.type.switch_2':'Doppelschalter','fp.type.switch_pass':'Wechselschalter','fp.type.dimmer':'Dimmer','fp.type.light':'Leuchte','fp.type.chandelier':'Kronleuchter','fp.type.sconce':'Wandleuchte','fp.type.spot':'Spot','fp.type.junction_box':'Abzweigdose','fp.type.panel':'Verteiler','fp.type.meter':'Stromzähler','fp.type.fan':'Ventilator','fp.type.bell':'Klingel','fp.type.tv_outlet':'TV-Anschluss','fp.type.data_outlet':'Netzwerk-/LAN-Anschluss','fp.symbolSize.title':'Symbolgröße','block.add':'Block hinzufügen','block.remove':'Block entfernen','block.pickTitle':'Block hinzufügen','block.materials.desc':'Artikelliste mit Preisen und Summe','block.floorplan.desc':'Wände und Elektrosymbole','fp.mode.dimensions':'Maße','fp.hint.dimensions':'Tippen Sie auf den ersten Punkt, dann auf den zweiten — ein Feld zur Eingabe der Entfernung erscheint. Sie können Wände oder den Abstand zu einem beliebigen Objekt messen.','fp.dim.modalTitle':'Maß','fp.dim.label':'Wert','fp.dim.placeholder':'Z. B.: 3,2 m','fp.dimSize.title':'Größe der Maßbeschriftung','fp.history.undo':'Rückgängig','fp.history.redo':'Wiederholen','fp.planDefaultName':'Plan','confirm.deleteFloorplan.title':'Plan löschen?','confirm.deleteFloorplan.text':'Die Wände, Symbole und Maße dieses Plans werden endgültig gelöscht.','fp.renamePrompt':'Planname','fp.addPlan':'Plan hinzufügen','print.photoLabel':'Verteiler {n}','auth.title':'Anmelden','auth.signInSub':'Melden Sie sich an, um Ihre Projekte zu sehen.','auth.signUpSub':'Erstellen Sie ein Konto, um loszulegen.','auth.email':'E-Mail','auth.password':'Passwort','auth.signIn':'Anmelden','auth.signUp':'Registrieren','auth.noAccount':'Noch kein Konto?','auth.hasAccount':'Bereits ein Konto?','auth.checkEmail':'Prüfen Sie Ihre E-Mails und klicken Sie auf den Bestätigungslink.','auth.errorRequired':'Bitte E-Mail und Passwort eingeben','auth.errorGeneric':'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.','auth.signOut':'Abmelden'
+      'print.noMarkers':'Noch keine Markierungen.','print.photoLabel':'Verteiler {n}','editor.subtitle':'Verteiler bearbeiten','project.untitled':'Ohne Namen','photo.add':'Foto hinzufügen','confirm.deletePhoto.title':'Foto löschen?','confirm.deletePhoto.text':'Das Foto und alle seine Markierungen werden endgültig gelöscht.','materials.heading':'Materialien','materials.col.name':'Bezeichnung','materials.col.qty':'Menge','materials.col.price':'Preis','materials.col.sum':'Summe','materials.empty':'Die Liste ist leer. Fügen Sie den ersten Posten hinzu.','materials.addRow':'+ Position hinzufügen','materials.total':'Gesamt','materials.namePlaceholder':'Z. B.: 16A-Automat','fp.heading':'Grundriss','fp.mode.walls':'Wände','fp.mode.symbols':'Symbole','fp.undo':'Punkt rückgängig','fp.finish':'Kontur abschließen','fp.clear':'Alles löschen','fp.hint.walls':'Tippen Sie nacheinander auf die Raumecken — die Linien verbinden sich automatisch. Zum Schließen der Kontur in der Nähe des ersten Punkts tippen.','fp.hint.symbols':'Wählen Sie unten ein Symbol und tippen Sie auf den Plan, um es zu platzieren. Zum Verschieben ziehen.','fp.confirmClear.title':'Plan löschen?','fp.confirmClear.text':'Alle Wände und Symbole im Plan werden endgültig gelöscht.','fp.symbol.noteLabel':'Notiz (optional)','fp.type.socket':'Steckdose','fp.type.socket_double':'Doppelsteckdose','fp.type.socket_grounded':'Steckdose mit Erdung','fp.type.socket_waterproof':'Spritzwassergeschützte Steckdose','fp.type.socket_3phase':'Kraftsteckdose (3-phasig)','fp.type.switch_1':'Einfachschalter','fp.type.switch_2':'Doppelschalter','fp.type.switch_pass':'Wechselschalter','fp.type.dimmer':'Dimmer','fp.type.light':'Leuchte','fp.type.chandelier':'Kronleuchter','fp.type.sconce':'Wandleuchte','fp.type.spot':'Spot','fp.type.junction_box':'Abzweigdose','fp.type.panel':'Verteiler','fp.type.meter':'Stromzähler','fp.type.fan':'Ventilator','fp.type.bell':'Klingel','fp.type.tv_outlet':'TV-Anschluss','fp.type.data_outlet':'Netzwerk-/LAN-Anschluss','fp.symbolSize.title':'Symbolgröße','block.add':'Block hinzufügen','block.remove':'Block entfernen','block.pickTitle':'Block hinzufügen','block.materials.desc':'Artikelliste mit Preisen und Summe','block.floorplan.desc':'Wände und Elektrosymbole','fp.mode.dimensions':'Maße','fp.hint.dimensions':'Tippen Sie auf den ersten Punkt, dann auf den zweiten — ein Feld zur Eingabe der Entfernung erscheint. Sie können Wände oder den Abstand zu einem beliebigen Objekt messen.','fp.dim.modalTitle':'Maß','fp.dim.label':'Wert','fp.dim.placeholder':'Z. B.: 3,2 m','fp.dimSize.title':'Größe der Maßbeschriftung','fp.history.undo':'Rückgängig','fp.history.redo':'Wiederholen','fp.planDefaultName':'Plan','confirm.deleteFloorplan.title':'Plan löschen?','confirm.deleteFloorplan.text':'Die Wände, Symbole und Maße dieses Plans werden endgültig gelöscht.','fp.renamePrompt':'Planname','fp.addPlan':'Plan hinzufügen','print.photoLabel':'Verteiler {n}','auth.title':'Anmelden','auth.signInSub':'Melden Sie sich an, um Ihre Projekte zu sehen.','auth.signUpSub':'Erstellen Sie ein Konto, um loszulegen.','auth.email':'E-Mail','auth.password':'Passwort','auth.signIn':'Anmelden','auth.signUp':'Registrieren','auth.noAccount':'Noch kein Konto?','auth.hasAccount':'Bereits ein Konto?','auth.checkEmail':'Prüfen Sie Ihre E-Mails und klicken Sie auf den Bestätigungslink.','auth.errorRequired':'Bitte E-Mail und Passwort eingeben','auth.errorGeneric':'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.','auth.signOut':'Abmelden','works.heading':'Arbeitsverzeichnis','works.col.name':'Bezeichnung','works.col.qty':'Menge','works.col.price':'Preis','works.col.sum':'Summe','works.empty':'Die Liste ist leer. Fügen Sie den ersten Posten hinzu.','works.addRow':'+ Position hinzufügen','works.total':'Gesamt','works.namePlaceholder':'Z. B.: Montage eines Automaten','block.works.desc':'Arbeitsliste mit Preisen und Summe'
     },
     es:{
       'brand.name':'Cuadro','app.tagline':'Etiquetado de cuadros eléctricos','list.title':'Proyectos',
@@ -2262,7 +2457,7 @@
       'toast.storageUnavailable':'Almacenamiento no disponible — comprueba la conexión con Supabase','toast.sbNotConfigured':'Escribe SUPABASE_URL y SUPABASE_ANON_KEY en el código del sitio para habilitar el guardado',
       'toast.sbSaveFailed':'No se pudo guardar en Supabase — comprueba tu conexión','toast.pdfPhotoFailed':'No se pudo cargar la foto para el PDF',
       'toast.sbLibFailed':'No se pudo cargar la librería de Supabase. Comprueba tu conexión a internet y recarga la página.',
-      'print.noMarkers':'Aún no hay marcadores.','print.photoLabel':'Cuadro {n}','editor.subtitle':'Editando cuadro','project.untitled':'Sin nombre','photo.add':'Añadir foto','confirm.deletePhoto.title':'¿Eliminar esta foto?','confirm.deletePhoto.text':'La foto y todos sus marcadores se eliminarán de forma permanente.','materials.heading':'Materiales','materials.col.name':'Artículo','materials.col.qty':'Cant.','materials.col.price':'Precio','materials.col.sum':'Importe','materials.empty':'La lista está vacía. Añade el primer artículo.','materials.addRow':'+ Añadir artículo','materials.total':'Total','materials.namePlaceholder':'Ej.: Interruptor 16A','fp.heading':'Plano de la habitación','fp.mode.walls':'Paredes','fp.mode.symbols':'Símbolos','fp.undo':'Deshacer punto','fp.finish':'Terminar contorno','fp.clear':'Borrar todo','fp.hint.walls':'Toca las esquinas de la habitación una a una — las líneas se conectan automáticamente. Toca cerca del primer punto para cerrar el contorno.','fp.hint.symbols':'Elige un símbolo abajo y toca el plano para colocarlo. Arrastra para moverlo.','fp.confirmClear.title':'¿Borrar el plano?','fp.confirmClear.text':'Todas las paredes y símbolos del plano se eliminarán de forma permanente.','fp.symbol.noteLabel':'Nota (opcional)','fp.type.socket':'Enchufe','fp.type.socket_double':'Enchufe doble','fp.type.socket_grounded':'Enchufe con toma de tierra','fp.type.socket_waterproof':'Enchufe estanco','fp.type.socket_3phase':'Toma de fuerza (trifásica)','fp.type.switch_1':'Interruptor simple','fp.type.switch_2':'Interruptor doble','fp.type.switch_pass':'Conmutador de escalera','fp.type.dimmer':'Regulador de intensidad','fp.type.light':'Luminaria','fp.type.chandelier':'Lámpara de araña','fp.type.sconce':'Aplique de pared','fp.type.spot':'Foco empotrado','fp.type.junction_box':'Caja de derivación','fp.type.panel':'Cuadro eléctrico','fp.type.meter':'Contador eléctrico','fp.type.fan':'Ventilador','fp.type.bell':'Timbre','fp.type.tv_outlet':'Toma de TV','fp.type.data_outlet':'Toma de red/LAN','fp.symbolSize.title':'Tamaño de los símbolos','block.add':'Añadir bloque','block.remove':'Quitar bloque','block.pickTitle':'Añadir un bloque','block.materials.desc':'Lista de artículos con precios y total','block.floorplan.desc':'Paredes y símbolos eléctricos','fp.mode.dimensions':'Medidas','fp.hint.dimensions':'Toca el primer punto y luego el segundo — aparecerá un campo para introducir la distancia. Puedes medir paredes o la distancia a cualquier objeto.','fp.dim.modalTitle':'Medida','fp.dim.label':'Valor','fp.dim.placeholder':'Ej.: 3,2 m','fp.dimSize.title':'Tamaño de las etiquetas de medida','fp.history.undo':'Deshacer','fp.history.redo':'Rehacer','fp.planDefaultName':'Plano','confirm.deleteFloorplan.title':'¿Eliminar este plano?','confirm.deleteFloorplan.text':'Las paredes, símbolos y medidas de este plano se eliminarán de forma permanente.','fp.renamePrompt':'Nombre del plano','fp.addPlan':'Añadir plano','print.photoLabel':'Cuadro {n}','auth.title':'Iniciar sesión','auth.signInSub':'Inicia sesión para ver tus proyectos.','auth.signUpSub':'Crea una cuenta para empezar.','auth.email':'Correo electrónico','auth.password':'Contraseña','auth.signIn':'Iniciar sesión','auth.signUp':'Registrarse','auth.noAccount':'¿No tienes cuenta?','auth.hasAccount':'¿Ya tienes cuenta?','auth.checkEmail':'Revisa tu correo y haz clic en el enlace para confirmar tu cuenta.','auth.errorRequired':'Introduce tu correo y contraseña','auth.errorGeneric':'Algo salió mal. Inténtalo de nuevo.','auth.signOut':'Cerrar sesión'
+      'print.noMarkers':'Aún no hay marcadores.','print.photoLabel':'Cuadro {n}','editor.subtitle':'Editando cuadro','project.untitled':'Sin nombre','photo.add':'Añadir foto','confirm.deletePhoto.title':'¿Eliminar esta foto?','confirm.deletePhoto.text':'La foto y todos sus marcadores se eliminarán de forma permanente.','materials.heading':'Materiales','materials.col.name':'Artículo','materials.col.qty':'Cant.','materials.col.price':'Precio','materials.col.sum':'Importe','materials.empty':'La lista está vacía. Añade el primer artículo.','materials.addRow':'+ Añadir artículo','materials.total':'Total','materials.namePlaceholder':'Ej.: Interruptor 16A','fp.heading':'Plano de la habitación','fp.mode.walls':'Paredes','fp.mode.symbols':'Símbolos','fp.undo':'Deshacer punto','fp.finish':'Terminar contorno','fp.clear':'Borrar todo','fp.hint.walls':'Toca las esquinas de la habitación una a una — las líneas se conectan automáticamente. Toca cerca del primer punto para cerrar el contorno.','fp.hint.symbols':'Elige un símbolo abajo y toca el plano para colocarlo. Arrastra para moverlo.','fp.confirmClear.title':'¿Borrar el plano?','fp.confirmClear.text':'Todas las paredes y símbolos del plano se eliminarán de forma permanente.','fp.symbol.noteLabel':'Nota (opcional)','fp.type.socket':'Enchufe','fp.type.socket_double':'Enchufe doble','fp.type.socket_grounded':'Enchufe con toma de tierra','fp.type.socket_waterproof':'Enchufe estanco','fp.type.socket_3phase':'Toma de fuerza (trifásica)','fp.type.switch_1':'Interruptor simple','fp.type.switch_2':'Interruptor doble','fp.type.switch_pass':'Conmutador de escalera','fp.type.dimmer':'Regulador de intensidad','fp.type.light':'Luminaria','fp.type.chandelier':'Lámpara de araña','fp.type.sconce':'Aplique de pared','fp.type.spot':'Foco empotrado','fp.type.junction_box':'Caja de derivación','fp.type.panel':'Cuadro eléctrico','fp.type.meter':'Contador eléctrico','fp.type.fan':'Ventilador','fp.type.bell':'Timbre','fp.type.tv_outlet':'Toma de TV','fp.type.data_outlet':'Toma de red/LAN','fp.symbolSize.title':'Tamaño de los símbolos','block.add':'Añadir bloque','block.remove':'Quitar bloque','block.pickTitle':'Añadir un bloque','block.materials.desc':'Lista de artículos con precios y total','block.floorplan.desc':'Paredes y símbolos eléctricos','fp.mode.dimensions':'Medidas','fp.hint.dimensions':'Toca el primer punto y luego el segundo — aparecerá un campo para introducir la distancia. Puedes medir paredes o la distancia a cualquier objeto.','fp.dim.modalTitle':'Medida','fp.dim.label':'Valor','fp.dim.placeholder':'Ej.: 3,2 m','fp.dimSize.title':'Tamaño de las etiquetas de medida','fp.history.undo':'Deshacer','fp.history.redo':'Rehacer','fp.planDefaultName':'Plano','confirm.deleteFloorplan.title':'¿Eliminar este plano?','confirm.deleteFloorplan.text':'Las paredes, símbolos y medidas de este plano se eliminarán de forma permanente.','fp.renamePrompt':'Nombre del plano','fp.addPlan':'Añadir plano','print.photoLabel':'Cuadro {n}','auth.title':'Iniciar sesión','auth.signInSub':'Inicia sesión para ver tus proyectos.','auth.signUpSub':'Crea una cuenta para empezar.','auth.email':'Correo electrónico','auth.password':'Contraseña','auth.signIn':'Iniciar sesión','auth.signUp':'Registrarse','auth.noAccount':'¿No tienes cuenta?','auth.hasAccount':'¿Ya tienes cuenta?','auth.checkEmail':'Revisa tu correo y haz clic en el enlace para confirmar tu cuenta.','auth.errorRequired':'Introduce tu correo y contraseña','auth.errorGeneric':'Algo salió mal. Inténtalo de nuevo.','auth.signOut':'Cerrar sesión','works.heading':'Lista de trabajos','works.col.name':'Trabajo','works.col.qty':'Cant.','works.col.price':'Precio','works.col.sum':'Importe','works.empty':'La lista está vacía. Añade el primer trabajo.','works.addRow':'+ Añadir trabajo','works.total':'Total','works.namePlaceholder':'Ej.: Instalación de interruptor','block.works.desc':'Lista de trabajos con precios y total'
     },
     pt:{
       'brand.name':'Quadro','app.tagline':'Marcação de quadros elétricos','list.title':'Projetos',
@@ -2286,7 +2481,7 @@
       'toast.storageUnavailable':'Armazenamento indisponível — verifique a ligação ao Supabase','toast.sbNotConfigured':'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no código do site para ativar o guardado',
       'toast.sbSaveFailed':'Não foi possível guardar no Supabase — verifique a ligação','toast.pdfPhotoFailed':'Não foi possível carregar a foto para o PDF',
       'toast.sbLibFailed':'Não foi possível carregar a biblioteca do Supabase. Verifique a ligação à internet e recarregue a página.',
-      'print.noMarkers':'Ainda não há marcadores.','print.photoLabel':'Quadro {n}','editor.subtitle':'A editar o quadro','project.untitled':'Sem nome','photo.add':'Adicionar foto','confirm.deletePhoto.title':'Eliminar esta foto?','confirm.deletePhoto.text':'A foto e todos os seus marcadores serão eliminados permanentemente.','materials.heading':'Materiais','materials.col.name':'Artigo','materials.col.qty':'Qtd.','materials.col.price':'Preço','materials.col.sum':'Total','materials.empty':'A lista está vazia. Adicione o primeiro artigo.','materials.addRow':'+ Adicionar artigo','materials.total':'Total geral','materials.namePlaceholder':'Ex.: Disjuntor 16A','fp.heading':'Planta da divisão','fp.mode.walls':'Paredes','fp.mode.symbols':'Símbolos','fp.undo':'Desfazer ponto','fp.finish':'Terminar contorno','fp.clear':'Limpar tudo','fp.hint.walls':'Toque nos cantos da divisão, um a um — as linhas ligam-se automaticamente. Toque perto do primeiro ponto para fechar o contorno.','fp.hint.symbols':'Escolha um símbolo abaixo e toque na planta para o colocar. Arraste para mover.','fp.confirmClear.title':'Limpar a planta?','fp.confirmClear.text':'Todas as paredes e símbolos da planta serão eliminados permanentemente.','fp.symbol.noteLabel':'Nota (opcional)','fp.type.socket':'Tomada','fp.type.socket_double':'Tomada dupla','fp.type.socket_grounded':'Tomada com ligação à terra','fp.type.socket_waterproof':'Tomada estanque','fp.type.socket_3phase':'Tomada de força (trifásica)','fp.type.switch_1':'Interruptor simples','fp.type.switch_2':'Interruptor duplo','fp.type.switch_pass':'Interruptor de escada','fp.type.dimmer':'Regulador de intensidade','fp.type.light':'Luminária','fp.type.chandelier':'Lustre','fp.type.sconce':'Arandela','fp.type.spot':'Foco embutido','fp.type.junction_box':'Caixa de derivação','fp.type.panel':'Quadro elétrico','fp.type.meter':'Contador de eletricidade','fp.type.fan':'Ventilador','fp.type.bell':'Campainha','fp.type.tv_outlet':'Tomada de TV','fp.type.data_outlet':'Tomada de rede/LAN','fp.symbolSize.title':'Tamanho dos símbolos','block.add':'Adicionar bloco','block.remove':'Remover bloco','block.pickTitle':'Adicionar um bloco','block.materials.desc':'Lista de artigos com preços e total','block.floorplan.desc':'Paredes e símbolos elétricos','fp.mode.dimensions':'Medidas','fp.hint.dimensions':'Toque no primeiro ponto e depois no segundo — aparecerá um campo para introduzir a distância. Pode medir paredes ou a distância até qualquer objeto.','fp.dim.modalTitle':'Medida','fp.dim.label':'Valor','fp.dim.placeholder':'Ex.: 3,2 m','fp.dimSize.title':'Tamanho das etiquetas de medida','fp.history.undo':'Desfazer','fp.history.redo':'Refazer','fp.planDefaultName':'Planta','confirm.deleteFloorplan.title':'Eliminar esta planta?','confirm.deleteFloorplan.text':'As paredes, símbolos e medidas desta planta serão eliminados permanentemente.','fp.renamePrompt':'Nome da planta','fp.addPlan':'Adicionar planta','print.photoLabel':'Quadro {n}','auth.title':'Iniciar sessão','auth.signInSub':'Inicie sessão para ver os seus projetos.','auth.signUpSub':'Crie uma conta para começar.','auth.email':'Email','auth.password':'Palavra-passe','auth.signIn':'Iniciar sessão','auth.signUp':'Registar','auth.noAccount':'Não tem conta?','auth.hasAccount':'Já tem conta?','auth.checkEmail':'Verifique o seu email e clique na ligação para confirmar a conta.','auth.errorRequired':'Introduza o email e a palavra-passe','auth.errorGeneric':'Algo correu mal. Tente novamente.','auth.signOut':'Terminar sessão'
+      'print.noMarkers':'Ainda não há marcadores.','print.photoLabel':'Quadro {n}','editor.subtitle':'A editar o quadro','project.untitled':'Sem nome','photo.add':'Adicionar foto','confirm.deletePhoto.title':'Eliminar esta foto?','confirm.deletePhoto.text':'A foto e todos os seus marcadores serão eliminados permanentemente.','materials.heading':'Materiais','materials.col.name':'Artigo','materials.col.qty':'Qtd.','materials.col.price':'Preço','materials.col.sum':'Total','materials.empty':'A lista está vazia. Adicione o primeiro artigo.','materials.addRow':'+ Adicionar artigo','materials.total':'Total geral','materials.namePlaceholder':'Ex.: Disjuntor 16A','fp.heading':'Planta da divisão','fp.mode.walls':'Paredes','fp.mode.symbols':'Símbolos','fp.undo':'Desfazer ponto','fp.finish':'Terminar contorno','fp.clear':'Limpar tudo','fp.hint.walls':'Toque nos cantos da divisão, um a um — as linhas ligam-se automaticamente. Toque perto do primeiro ponto para fechar o contorno.','fp.hint.symbols':'Escolha um símbolo abaixo e toque na planta para o colocar. Arraste para mover.','fp.confirmClear.title':'Limpar a planta?','fp.confirmClear.text':'Todas as paredes e símbolos da planta serão eliminados permanentemente.','fp.symbol.noteLabel':'Nota (opcional)','fp.type.socket':'Tomada','fp.type.socket_double':'Tomada dupla','fp.type.socket_grounded':'Tomada com ligação à terra','fp.type.socket_waterproof':'Tomada estanque','fp.type.socket_3phase':'Tomada de força (trifásica)','fp.type.switch_1':'Interruptor simples','fp.type.switch_2':'Interruptor duplo','fp.type.switch_pass':'Interruptor de escada','fp.type.dimmer':'Regulador de intensidade','fp.type.light':'Luminária','fp.type.chandelier':'Lustre','fp.type.sconce':'Arandela','fp.type.spot':'Foco embutido','fp.type.junction_box':'Caixa de derivação','fp.type.panel':'Quadro elétrico','fp.type.meter':'Contador de eletricidade','fp.type.fan':'Ventilador','fp.type.bell':'Campainha','fp.type.tv_outlet':'Tomada de TV','fp.type.data_outlet':'Tomada de rede/LAN','fp.symbolSize.title':'Tamanho dos símbolos','block.add':'Adicionar bloco','block.remove':'Remover bloco','block.pickTitle':'Adicionar um bloco','block.materials.desc':'Lista de artigos com preços e total','block.floorplan.desc':'Paredes e símbolos elétricos','fp.mode.dimensions':'Medidas','fp.hint.dimensions':'Toque no primeiro ponto e depois no segundo — aparecerá um campo para introduzir a distância. Pode medir paredes ou a distância até qualquer objeto.','fp.dim.modalTitle':'Medida','fp.dim.label':'Valor','fp.dim.placeholder':'Ex.: 3,2 m','fp.dimSize.title':'Tamanho das etiquetas de medida','fp.history.undo':'Desfazer','fp.history.redo':'Refazer','fp.planDefaultName':'Planta','confirm.deleteFloorplan.title':'Eliminar esta planta?','confirm.deleteFloorplan.text':'As paredes, símbolos e medidas desta planta serão eliminados permanentemente.','fp.renamePrompt':'Nome da planta','fp.addPlan':'Adicionar planta','print.photoLabel':'Quadro {n}','auth.title':'Iniciar sessão','auth.signInSub':'Inicie sessão para ver os seus projetos.','auth.signUpSub':'Crie uma conta para começar.','auth.email':'Email','auth.password':'Palavra-passe','auth.signIn':'Iniciar sessão','auth.signUp':'Registar','auth.noAccount':'Não tem conta?','auth.hasAccount':'Já tem conta?','auth.checkEmail':'Verifique o seu email e clique na ligação para confirmar a conta.','auth.errorRequired':'Introduza o email e a palavra-passe','auth.errorGeneric':'Algo correu mal. Tente novamente.','auth.signOut':'Terminar sessão','works.heading':'Lista de trabalhos','works.col.name':'Trabalho','works.col.qty':'Qtd.','works.col.price':'Preço','works.col.sum':'Total','works.empty':'A lista está vazia. Adicione o primeiro trabalho.','works.addRow':'+ Adicionar trabalho','works.total':'Total geral','works.namePlaceholder':'Ex.: Instalação de disjuntor','block.works.desc':'Lista de trabalhos com preços e total'
     },
     cs:{
       'brand.name':'Rozvaděč','app.tagline':'Značení elektrických rozvaděčů','list.title':'Projekty',
@@ -2310,7 +2505,7 @@
       'toast.storageUnavailable':'Úložiště nedostupné — zkontrolujte připojení k Supabase','toast.sbNotConfigured':'Vyplňte SUPABASE_URL a SUPABASE_ANON_KEY v kódu webu pro zapnutí ukládání',
       'toast.sbSaveFailed':'Uložení do Supabase se nezdařilo — zkontrolujte připojení','toast.pdfPhotoFailed':'Fotku pro PDF se nepodařilo načíst',
       'toast.sbLibFailed':'Knihovnu Supabase se nepodařilo načíst. Zkontrolujte internetové připojení a načtěte stránku znovu.',
-      'print.noMarkers':'Zatím žádné značky.','print.photoLabel':'Rozvaděč {n}','editor.subtitle':'Úprava rozvaděče','project.untitled':'Bez názvu','photo.add':'Přidat fotku','confirm.deletePhoto.title':'Smazat tuto fotku?','confirm.deletePhoto.text':'Fotka a všechny její značky budou trvale smazány.','materials.heading':'Materiál','materials.col.name':'Položka','materials.col.qty':'Ks','materials.col.price':'Cena','materials.col.sum':'Součet','materials.empty':'Seznam je prázdný. Přidejte první položku.','materials.addRow':'+ Přidat položku','materials.total':'Celkem','materials.namePlaceholder':'Např.: Jistič 16A','fp.heading':'Půdorys místnosti','fp.mode.walls':'Stěny','fp.mode.symbols':'Značky','fp.undo':'Zpět o bod','fp.finish':'Dokončit obrys','fp.clear':'Vymazat vše','fp.hint.walls':'Klepejte postupně na rohy místnosti — čáry se propojí automaticky. Obrys uzavřete klepnutím blízko prvního bodu.','fp.hint.symbols':'Vyberte značku dole a klepnutím na plán ji umístěte. Přetažením ji přesunete.','fp.confirmClear.title':'Vymazat plán?','fp.confirmClear.text':'Všechny stěny a značky v plánu budou trvale smazány.','fp.symbol.noteLabel':'Poznámka (nepovinné)','fp.type.socket':'Zásuvka','fp.type.socket_double':'Dvojitá zásuvka','fp.type.socket_grounded':'Zásuvka s uzemněním','fp.type.socket_waterproof':'Zásuvka voděodolná','fp.type.socket_3phase':'Síťová zásuvka (třífázová)','fp.type.switch_1':'Jednopólový vypínač','fp.type.switch_2':'Dvoupólový vypínač','fp.type.switch_pass':'Schodišťový vypínač','fp.type.dimmer':'Stmívač','fp.type.light':'Svítidlo','fp.type.chandelier':'Lustr','fp.type.sconce':'Nástěnné svítidlo','fp.type.spot':'Bodové svítidlo','fp.type.junction_box':'Rozbočovací krabice','fp.type.panel':'Rozvaděč','fp.type.meter':'Elektroměr','fp.type.fan':'Ventilátor','fp.type.bell':'Zvonek','fp.type.tv_outlet':'TV zásuvka','fp.type.data_outlet':'Síťová/LAN zásuvka','fp.symbolSize.title':'Velikost ikon značek','block.add':'Přidat blok','block.remove':'Odebrat blok','block.pickTitle':'Přidat blok','block.materials.desc':'Seznam položek s cenami a součtem','block.floorplan.desc':'Stěny a elektrické značky','fp.mode.dimensions':'Rozměry','fp.hint.dimensions':'Klepněte na první bod, poté na druhý — objeví se pole pro zadání vzdálenosti. Můžete měřit stěny nebo vzdálenost k libovolnému objektu.','fp.dim.modalTitle':'Rozměr','fp.dim.label':'Hodnota','fp.dim.placeholder':'Např.: 3,2 m','fp.dimSize.title':'Velikost popisků rozměrů','fp.history.undo':'Zpět','fp.history.redo':'Znovu','fp.planDefaultName':'Plán','confirm.deleteFloorplan.title':'Smazat tento plán?','confirm.deleteFloorplan.text':'Stěny, značky a rozměry tohoto plánu budou trvale smazány.','fp.renamePrompt':'Název plánu','fp.addPlan':'Přidat plán','print.photoLabel':'Rozvaděč {n}','auth.title':'Přihlášení','auth.signInSub':'Přihlaste se a zobrazte své projekty.','auth.signUpSub':'Vytvořte si účet a začněte.','auth.email':'E-mail','auth.password':'Heslo','auth.signIn':'Přihlásit se','auth.signUp':'Zaregistrovat se','auth.noAccount':'Nemáte účet?','auth.hasAccount':'Už máte účet?','auth.checkEmail':'Zkontrolujte e-mail a klikněte na odkaz pro potvrzení účtu.','auth.errorRequired':'Zadejte e-mail a heslo','auth.errorGeneric':'Něco se pokazilo. Zkuste to znovu.','auth.signOut':'Odhlásit se'
+      'print.noMarkers':'Zatím žádné značky.','print.photoLabel':'Rozvaděč {n}','editor.subtitle':'Úprava rozvaděče','project.untitled':'Bez názvu','photo.add':'Přidat fotku','confirm.deletePhoto.title':'Smazat tuto fotku?','confirm.deletePhoto.text':'Fotka a všechny její značky budou trvale smazány.','materials.heading':'Materiál','materials.col.name':'Položka','materials.col.qty':'Ks','materials.col.price':'Cena','materials.col.sum':'Součet','materials.empty':'Seznam je prázdný. Přidejte první položku.','materials.addRow':'+ Přidat položku','materials.total':'Celkem','materials.namePlaceholder':'Např.: Jistič 16A','fp.heading':'Půdorys místnosti','fp.mode.walls':'Stěny','fp.mode.symbols':'Značky','fp.undo':'Zpět o bod','fp.finish':'Dokončit obrys','fp.clear':'Vymazat vše','fp.hint.walls':'Klepejte postupně na rohy místnosti — čáry se propojí automaticky. Obrys uzavřete klepnutím blízko prvního bodu.','fp.hint.symbols':'Vyberte značku dole a klepnutím na plán ji umístěte. Přetažením ji přesunete.','fp.confirmClear.title':'Vymazat plán?','fp.confirmClear.text':'Všechny stěny a značky v plánu budou trvale smazány.','fp.symbol.noteLabel':'Poznámka (nepovinné)','fp.type.socket':'Zásuvka','fp.type.socket_double':'Dvojitá zásuvka','fp.type.socket_grounded':'Zásuvka s uzemněním','fp.type.socket_waterproof':'Zásuvka voděodolná','fp.type.socket_3phase':'Síťová zásuvka (třífázová)','fp.type.switch_1':'Jednopólový vypínač','fp.type.switch_2':'Dvoupólový vypínač','fp.type.switch_pass':'Schodišťový vypínač','fp.type.dimmer':'Stmívač','fp.type.light':'Svítidlo','fp.type.chandelier':'Lustr','fp.type.sconce':'Nástěnné svítidlo','fp.type.spot':'Bodové svítidlo','fp.type.junction_box':'Rozbočovací krabice','fp.type.panel':'Rozvaděč','fp.type.meter':'Elektroměr','fp.type.fan':'Ventilátor','fp.type.bell':'Zvonek','fp.type.tv_outlet':'TV zásuvka','fp.type.data_outlet':'Síťová/LAN zásuvka','fp.symbolSize.title':'Velikost ikon značek','block.add':'Přidat blok','block.remove':'Odebrat blok','block.pickTitle':'Přidat blok','block.materials.desc':'Seznam položek s cenami a součtem','block.floorplan.desc':'Stěny a elektrické značky','fp.mode.dimensions':'Rozměry','fp.hint.dimensions':'Klepněte na první bod, poté na druhý — objeví se pole pro zadání vzdálenosti. Můžete měřit stěny nebo vzdálenost k libovolnému objektu.','fp.dim.modalTitle':'Rozměr','fp.dim.label':'Hodnota','fp.dim.placeholder':'Např.: 3,2 m','fp.dimSize.title':'Velikost popisků rozměrů','fp.history.undo':'Zpět','fp.history.redo':'Znovu','fp.planDefaultName':'Plán','confirm.deleteFloorplan.title':'Smazat tento plán?','confirm.deleteFloorplan.text':'Stěny, značky a rozměry tohoto plánu budou trvale smazány.','fp.renamePrompt':'Název plánu','fp.addPlan':'Přidat plán','print.photoLabel':'Rozvaděč {n}','auth.title':'Přihlášení','auth.signInSub':'Přihlaste se a zobrazte své projekty.','auth.signUpSub':'Vytvořte si účet a začněte.','auth.email':'E-mail','auth.password':'Heslo','auth.signIn':'Přihlásit se','auth.signUp':'Zaregistrovat se','auth.noAccount':'Nemáte účet?','auth.hasAccount':'Už máte účet?','auth.checkEmail':'Zkontrolujte e-mail a klikněte na odkaz pro potvrzení účtu.','auth.errorRequired':'Zadejte e-mail a heslo','auth.errorGeneric':'Něco se pokazilo. Zkuste to znovu.','auth.signOut':'Odhlásit se','works.heading':'Soupis prací','works.col.name':'Práce','works.col.qty':'Ks','works.col.price':'Cena','works.col.sum':'Součet','works.empty':'Seznam je prázdný. Přidejte první položku.','works.addRow':'+ Přidat položku','works.total':'Celkem','works.namePlaceholder':'Např.: Montáž jističe','block.works.desc':'Soupis prací s cenami a součtem'
     },
     pl:{
       'brand.name':'Rozdzielnia','app.tagline':'Oznaczanie rozdzielnic elektrycznych','list.title':'Projekty',
@@ -2334,7 +2529,7 @@
       'toast.storageUnavailable':'Magazyn niedostępny — sprawdź połączenie z Supabase','toast.sbNotConfigured':'Wpisz SUPABASE_URL i SUPABASE_ANON_KEY w kodzie strony, aby włączyć zapisywanie',
       'toast.sbSaveFailed':'Nie udało się zapisać w Supabase — sprawdź połączenie','toast.pdfPhotoFailed':'Nie udało się wczytać zdjęcia do PDF',
       'toast.sbLibFailed':'Nie udało się wczytać biblioteki Supabase. Sprawdź połączenie z internetem i odśwież stronę.',
-      'print.noMarkers':'Brak znaczników.','print.photoLabel':'Rozdzielnica {n}','editor.subtitle':'Edycja rozdzielnicy','project.untitled':'Bez nazwy','photo.add':'Dodaj zdjęcie','confirm.deletePhoto.title':'Usunąć to zdjęcie?','confirm.deletePhoto.text':'Zdjęcie i wszystkie jego znaczniki zostaną trwale usunięte.','materials.heading':'Materiały','materials.col.name':'Nazwa','materials.col.qty':'Ilość','materials.col.price':'Cena','materials.col.sum':'Suma','materials.empty':'Lista jest pusta. Dodaj pierwszą pozycję.','materials.addRow':'+ Dodaj pozycję','materials.total':'Razem','materials.namePlaceholder':'Np.: Wyłącznik 16A','fp.heading':'Rzut pomieszczenia','fp.mode.walls':'Ściany','fp.mode.symbols':'Symbole','fp.undo':'Cofnij punkt','fp.finish':'Zakończ kontur','fp.clear':'Wyczyść wszystko','fp.hint.walls':'Dotykaj kolejno narożników pomieszczenia — linie połączą się automatycznie. Aby zamknąć kontur, dotknij blisko pierwszego punktu.','fp.hint.symbols':'Wybierz symbol poniżej i dotknij planu, aby go umieścić. Przeciągnij, aby przesunąć.','fp.confirmClear.title':'Wyczyścić plan?','fp.confirmClear.text':'Wszystkie ściany i symbole na planie zostaną trwale usunięte.','fp.symbol.noteLabel':'Notatka (opcjonalnie)','fp.type.socket':'Gniazdko','fp.type.socket_double':'Gniazdko podwójne','fp.type.socket_grounded':'Gniazdko z uziemieniem','fp.type.socket_waterproof':'Gniazdko wodoszczelne','fp.type.socket_3phase':'Gniazdo siłowe (trójfazowe)','fp.type.switch_1':'Włącznik pojedynczy','fp.type.switch_2':'Włącznik podwójny','fp.type.switch_pass':'Łącznik schodowy','fp.type.dimmer':'Ściemniacz','fp.type.light':'Oprawa oświetleniowa','fp.type.chandelier':'Żyrandol','fp.type.sconce':'Kinkiet','fp.type.spot':'Oczko halogenowe','fp.type.junction_box':'Puszka rozgałęźna','fp.type.panel':'Rozdzielnica','fp.type.meter':'Licznik energii','fp.type.fan':'Wentylator','fp.type.bell':'Dzwonek','fp.type.tv_outlet':'Gniazdo TV','fp.type.data_outlet':'Gniazdo sieciowe/LAN','fp.symbolSize.title':'Rozmiar ikon symboli','block.add':'Dodaj blok','block.remove':'Usuń blok','block.pickTitle':'Dodaj blok','block.materials.desc':'Lista pozycji z cenami i sumą','block.floorplan.desc':'Ściany i symbole elektryczne','fp.mode.dimensions':'Wymiary','fp.hint.dimensions':'Dotknij pierwszego punktu, a potem drugiego — pojawi się pole do wpisania odległości. Możesz mierzyć ściany lub odległość do dowolnego obiektu.','fp.dim.modalTitle':'Wymiar','fp.dim.label':'Wartość','fp.dim.placeholder':'Np.: 3,2 m','fp.dimSize.title':'Rozmiar etykiet wymiarów','fp.history.undo':'Cofnij','fp.history.redo':'Ponów','fp.planDefaultName':'Plan','confirm.deleteFloorplan.title':'Usunąć ten plan?','confirm.deleteFloorplan.text':'Ściany, symbole i wymiary tego planu zostaną trwale usunięte.','fp.renamePrompt':'Nazwa planu','fp.addPlan':'Dodaj plan','print.photoLabel':'Rozdzielnica {n}','auth.title':'Logowanie','auth.signInSub':'Zaloguj się, aby zobaczyć swoje projekty.','auth.signUpSub':'Utwórz konto, aby zacząć.','auth.email':'Email','auth.password':'Hasło','auth.signIn':'Zaloguj się','auth.signUp':'Zarejestruj się','auth.noAccount':'Nie masz konta?','auth.hasAccount':'Masz już konto?','auth.checkEmail':'Sprawdź pocztę i kliknij link, aby potwierdzić konto.','auth.errorRequired':'Wpisz email i hasło','auth.errorGeneric':'Coś poszło nie tak. Spróbuj ponownie.','auth.signOut':'Wyloguj się'
+      'print.noMarkers':'Brak znaczników.','print.photoLabel':'Rozdzielnica {n}','editor.subtitle':'Edycja rozdzielnicy','project.untitled':'Bez nazwy','photo.add':'Dodaj zdjęcie','confirm.deletePhoto.title':'Usunąć to zdjęcie?','confirm.deletePhoto.text':'Zdjęcie i wszystkie jego znaczniki zostaną trwale usunięte.','materials.heading':'Materiały','materials.col.name':'Nazwa','materials.col.qty':'Ilość','materials.col.price':'Cena','materials.col.sum':'Suma','materials.empty':'Lista jest pusta. Dodaj pierwszą pozycję.','materials.addRow':'+ Dodaj pozycję','materials.total':'Razem','materials.namePlaceholder':'Np.: Wyłącznik 16A','fp.heading':'Rzut pomieszczenia','fp.mode.walls':'Ściany','fp.mode.symbols':'Symbole','fp.undo':'Cofnij punkt','fp.finish':'Zakończ kontur','fp.clear':'Wyczyść wszystko','fp.hint.walls':'Dotykaj kolejno narożników pomieszczenia — linie połączą się automatycznie. Aby zamknąć kontur, dotknij blisko pierwszego punktu.','fp.hint.symbols':'Wybierz symbol poniżej i dotknij planu, aby go umieścić. Przeciągnij, aby przesunąć.','fp.confirmClear.title':'Wyczyścić plan?','fp.confirmClear.text':'Wszystkie ściany i symbole na planie zostaną trwale usunięte.','fp.symbol.noteLabel':'Notatka (opcjonalnie)','fp.type.socket':'Gniazdko','fp.type.socket_double':'Gniazdko podwójne','fp.type.socket_grounded':'Gniazdko z uziemieniem','fp.type.socket_waterproof':'Gniazdko wodoszczelne','fp.type.socket_3phase':'Gniazdo siłowe (trójfazowe)','fp.type.switch_1':'Włącznik pojedynczy','fp.type.switch_2':'Włącznik podwójny','fp.type.switch_pass':'Łącznik schodowy','fp.type.dimmer':'Ściemniacz','fp.type.light':'Oprawa oświetleniowa','fp.type.chandelier':'Żyrandol','fp.type.sconce':'Kinkiet','fp.type.spot':'Oczko halogenowe','fp.type.junction_box':'Puszka rozgałęźna','fp.type.panel':'Rozdzielnica','fp.type.meter':'Licznik energii','fp.type.fan':'Wentylator','fp.type.bell':'Dzwonek','fp.type.tv_outlet':'Gniazdo TV','fp.type.data_outlet':'Gniazdo sieciowe/LAN','fp.symbolSize.title':'Rozmiar ikon symboli','block.add':'Dodaj blok','block.remove':'Usuń blok','block.pickTitle':'Dodaj blok','block.materials.desc':'Lista pozycji z cenami i sumą','block.floorplan.desc':'Ściany i symbole elektryczne','fp.mode.dimensions':'Wymiary','fp.hint.dimensions':'Dotknij pierwszego punktu, a potem drugiego — pojawi się pole do wpisania odległości. Możesz mierzyć ściany lub odległość do dowolnego obiektu.','fp.dim.modalTitle':'Wymiar','fp.dim.label':'Wartość','fp.dim.placeholder':'Np.: 3,2 m','fp.dimSize.title':'Rozmiar etykiet wymiarów','fp.history.undo':'Cofnij','fp.history.redo':'Ponów','fp.planDefaultName':'Plan','confirm.deleteFloorplan.title':'Usunąć ten plan?','confirm.deleteFloorplan.text':'Ściany, symbole i wymiary tego planu zostaną trwale usunięte.','fp.renamePrompt':'Nazwa planu','fp.addPlan':'Dodaj plan','print.photoLabel':'Rozdzielnica {n}','auth.title':'Logowanie','auth.signInSub':'Zaloguj się, aby zobaczyć swoje projekty.','auth.signUpSub':'Utwórz konto, aby zacząć.','auth.email':'Email','auth.password':'Hasło','auth.signIn':'Zaloguj się','auth.signUp':'Zarejestruj się','auth.noAccount':'Nie masz konta?','auth.hasAccount':'Masz już konto?','auth.checkEmail':'Sprawdź pocztę i kliknij link, aby potwierdzić konto.','auth.errorRequired':'Wpisz email i hasło','auth.errorGeneric':'Coś poszło nie tak. Spróbuj ponownie.','auth.signOut':'Wyloguj się','works.heading':'Wykaz prac','works.col.name':'Praca','works.col.qty':'Ilość','works.col.price':'Cena','works.col.sum':'Suma','works.empty':'Lista jest pusta. Dodaj pierwszą pozycję.','works.addRow':'+ Dodaj pozycję','works.total':'Razem','works.namePlaceholder':'Np.: Montaż wyłącznika','block.works.desc':'Wykaz prac z cenami i sumą'
     }
   };
   let currentLang = 'ru';
@@ -2366,6 +2561,7 @@
       updateStageHint();
       renderMarkerList();
       renderMaterials();
+      renderWorks();
       renderSymbolPalette();
       fpHint.textContent = fpMode === 'wall' ? t('fp.hint.walls') : fpMode === 'symbol' ? t('fp.hint.symbols') : t('fp.hint.dimensions');
       editorSub.textContent = fmtDate(currentProject.updatedAt) + ' · ' + t('markers.heading') + ': ' + activePhoto().markers.length;
@@ -2532,10 +2728,12 @@
       symbolSize: row.symbol_size || 100,
       dimSize: row.dim_size || 100,
       hasMaterials: typeof row.has_materials === 'boolean' ? row.has_materials : ((row.materials||[]).length > 0),
+      hasWorks: typeof row.has_works === 'boolean' ? row.has_works : ((row.works||[]).length > 0),
       userId: row.user_id || null,
       hasFloorplan: typeof row.has_floorplan === 'boolean' ? row.has_floorplan : floorplans.some(fp => (fp.walls||[]).length > 0 || (fp.symbols||[]).length > 0 || (fp.dimensions||[]).length > 0),
       photos: photos,
       materials: Array.isArray(row.materials) ? row.materials : [],
+      works: Array.isArray(row.works) ? row.works : [],
       floorplans: floorplans
     };
   }
@@ -2548,10 +2746,12 @@
       symbol_size: p.symbolSize || 100,
       dim_size: p.dimSize || 100,
       has_materials: !!p.hasMaterials,
+      has_works: !!p.hasWorks,
       user_id: p.userId || (currentUser ? currentUser.id : null),
       has_floorplan: !!p.hasFloorplan,
       photos: p.photos || [],
       materials: p.materials || [],
+      works: p.works || [],
       floorplans: p.floorplans || [],
       thumb_url: cover ? cover.thumb : null,
       image_url: cover ? cover.image : null
@@ -2663,8 +2863,12 @@
   function showEditor(project){
     currentProject = project;
     if(!Array.isArray(currentProject.materials)) currentProject.materials = [];
+    if(!Array.isArray(currentProject.works)) currentProject.works = [];
     if(typeof currentProject.hasMaterials !== 'boolean'){
       currentProject.hasMaterials = currentProject.materials.length > 0;
+    }
+    if(typeof currentProject.hasWorks !== 'boolean'){
+      currentProject.hasWorks = currentProject.works.length > 0;
     }
     if(typeof currentProject.hasFloorplan !== 'boolean'){
       const plans = Array.isArray(currentProject.floorplans) ? currentProject.floorplans
@@ -2688,6 +2892,7 @@
     renderPhotoStrip();
     loadActivePhoto();
     renderMaterials();
+    renderWorks();
     ensureFloorplan();
     activeFloorplanIndex = 0;
     loadActiveFloorplan();
@@ -2697,9 +2902,11 @@
   function updateBlockVisibility(){
     if(!currentProject) return;
     materialsSection.hidden = !currentProject.hasMaterials;
+    worksSection.hidden = !currentProject.hasWorks;
     floorplanSection.hidden = !currentProject.hasFloorplan;
-    addBlockRow.hidden = currentProject.hasMaterials && currentProject.hasFloorplan;
+    addBlockRow.hidden = currentProject.hasMaterials && currentProject.hasWorks && currentProject.hasFloorplan;
     choiceAddMaterials.hidden = currentProject.hasMaterials;
+    choiceAddWorks.hidden = currentProject.hasWorks;
     choiceAddFloorplan.hidden = currentProject.hasFloorplan;
   }
 
@@ -2950,9 +3157,10 @@
 
     const full = {
       id, name, createdAt: now, updatedAt: now, pinSize: 13, symbolSize: 100, dimSize: 100,
-      hasMaterials: false, hasFloorplan: false, userId: currentUser ? currentUser.id : null,
+      hasMaterials: false, hasWorks: false, hasFloorplan: false, userId: currentUser ? currentUser.id : null,
       photos: photos,
       materials: [],
+      works: [],
       floorplans: []
     };
     btnCreateProject.textContent = t('btn.saving');
@@ -3470,6 +3678,41 @@
         <tfoot><tr>
           <td colspan="3">${escapeHtml(t('materials.total'))}</td>
           <td class="num">${fmtMoney(total)}</td>
+        </tr></tfoot>`;
+    }
+
+    // Works
+    const works = currentProject.works || [];
+    const printWorksSection = el('printWorksSection');
+    const printWorksTable = el('printWorksTable');
+    if(works.length === 0){
+      printWorksSection.style.display = 'none';
+    }else{
+      printWorksSection.style.display = '';
+      let totalW = 0;
+      const rowsHtmlW = works.map(item=>{
+        const qty = parseFloat(item.qty) || 0;
+        const price = parseFloat(item.price) || 0;
+        const sum = qty * price;
+        totalW += sum;
+        return `<tr>
+          <td>${escapeHtml(item.name || '')}</td>
+          <td class="num">${fmtMoney(qty)}</td>
+          <td class="num">${fmtMoney(price)}</td>
+          <td class="num">${fmtMoney(sum)}</td>
+        </tr>`;
+      }).join('');
+      printWorksTable.innerHTML = `
+        <thead><tr>
+          <th>${escapeHtml(t('works.col.name'))}</th>
+          <th>${escapeHtml(t('works.col.qty'))}</th>
+          <th>${escapeHtml(t('works.col.price'))}</th>
+          <th>${escapeHtml(t('works.col.sum'))}</th>
+        </tr></thead>
+        <tbody>${rowsHtmlW}</tbody>
+        <tfoot><tr>
+          <td colspan="3">${escapeHtml(t('works.total'))}</td>
+          <td class="num">${fmtMoney(totalW)}</td>
         </tr></tfoot>`;
     }
 
